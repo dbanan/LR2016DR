@@ -22,11 +22,10 @@ library(gridExtra)
 
 #####LOAD#####
 #bring in the equivalent of step2 data (formatted, duplicates removed, outliers flagged)
-setwd("/rsync/box/Setaria/2016 Setaria/data analysis")
-load("step2_16DR_harvest_traits.RData")
-load("step2_16DR_harvest_weights.RData")
-load("step2_16DR_panicle_emergence.RData")
-load("step2_16DR_midseason_architecture.RData")
+load("/rsync/box/Setaria/2016 Setaria/data analysis/step2_16DR_harvest_traits.RData")
+load("/rsync/box/Setaria/2016 Setaria/data analysis/step2_16DR_harvest_weights.RData")
+load("/rsync/box/Setaria/2016 Setaria/data analysis/step2_16DR_panicle_emergence.RData")
+load("/rsync/box/Setaria/2016 Setaria/data analysis/step2_16DR_midseason_architecture.RData")
 
 
 
@@ -58,3 +57,22 @@ clean$data<-as.numeric(clean$data)
 clean1<-ddply(clean, c("subplot_id", "rep", "treatment", "genotype", "trait"), summarise, average=mean(data))
 colnames(clean1)[6]<-"data"
 
+
+
+
+
+#####COMBINE#####
+#combine all population level datasets 
+combine<-rbind(harvest_traits1, harvest_weights, panicle_emergence, clean1)
+
+#remove B100, BLANK, and TB_0430? 
+combine<-combine[!combine$genotype=="B100",]
+combine<-combine[!combine$genotype=="BLANK",]
+combine<-combine[!combine$genotype=="TB_0430",]
+
+#remove extra panicle emergence data (stick with orignal)
+combine<-combine[!(combine$trait=="panicle_emerge_DAS"),]
+
+
+#simple boxplots of all 
+ggplot()+geom_boxplot(data=combine, aes(factor(treatment), data, fill=factor(treatment)))+facet_wrap(~trait, scale="free")

@@ -1,13 +1,16 @@
 #phylogenetic_analysis
 
+library(plyr)
 
 library(circlize)
 library(ape)
 library(dendextend)
+library(colorspace)
 
-install.packages("circlize")
+install.packages('circlize')
 install.packages("ape")
 install.packages("dendextend")
+install.packages("colorspace")
 
 
 #this script will assess leaf rolling across the accession's phylogeny (?) 
@@ -45,12 +48,14 @@ snp_pheno<-snp_012
 snp_pheno$genotype<-rownames(snp_pheno)
 snp_pheno<-merge(snp_pheno, pheno, by=c("genotype"))
 
+rownames(snp_pheno)<-snp_pheno$genotype
+snp_pheno$genotype<-NULL
 
 #does the data need to be rotated (transposed)? ...actually i dont think so, so maybe skip this
 #snp_map<-t(snp_012)
 #snp_map<-as.data.frame(snp_map)
 
-d_snp<-dist(snp_pheno[,2:1317])
+d_snp<-dist(snp_pheno[,1:1316])
 hc_snp<-hclust(d_snp)
 
 
@@ -58,15 +63,35 @@ plot(hc_snp)
 
 dend<-as.dendrogram(hc_snp)
 
+
+
+
+labels_colors(dend) <-
+  rainbow_hcl(3)[sort_levels_values(
+    as.numeric(snp_pheno[,1318])[order.dendrogram(dend)]
+  )]
+
+labels(dend)<-as.character(snp_pheno[,1])[order.dendrogram(dend)]
+
+
+#output dendrograms 
+png("~/Desktop/meeting_dendrogram.png")
 plot(dend)
-
-colors_to_use<-as.numeric(snp_pheno[,1318])
-colors_to_use <- colors_to_use[order.dendrogram(dend)]
+dev.off()
 
 
-labels_colors(dend)
 
-labels_colors(dend)<-colors_to_use
+
+png("~/Desktop/meeting_dendrogram_score_s4.png")
+plot(as.phylo(hc_snp), tip.color=snp_pheno[,c(1317)])
+dev.off()
+
+
+
+
+
+
+
 
 #so far this works 
 d_snp<-dist(snp_012)
