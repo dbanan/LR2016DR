@@ -76,3 +76,15 @@ combine<-combine[!(combine$trait=="panicle_emerge_DAS"),]
 
 #simple boxplots of all 
 ggplot()+geom_boxplot(data=combine, aes(factor(treatment), data, fill=factor(treatment)))+facet_wrap(~trait, scale="free")
+
+
+
+#ouput subplot level plant data 
+save(combine, file="data_population_plant.Rdata")
+
+
+
+
+
+
+
