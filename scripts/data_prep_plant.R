@@ -80,7 +80,7 @@ ggplot()+geom_boxplot(data=combine, aes(factor(treatment), data, fill=factor(tre
 
 
 #ouput subplot level plant data 
-save(combine, file="data_population_plant.Rdata")
+save(combine, file="./data/clean_data/data_population_plant.Rdata")
 
 
 

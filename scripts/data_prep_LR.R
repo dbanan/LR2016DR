@@ -21,16 +21,16 @@ library(gridExtra)
 
 ###DESIGN###----
 #infile experimental design
-design16dr<-read.csv("/rsync/box/Setaria/2016 Setaria/16DR_subplot_genotype_list_FINAL.csv",header=T, stringsAsFactors=F,na.strings=".")
+design16dr<-read.csv("./data/raw_data/16DR_subplot_genotype_list_FINAL.csv",header=T, stringsAsFactors=F,na.strings=".")
 #format column names
 colnames(design16dr)<-c("subplot_id","rep","awning","treatment","genotype")
 
 
 ###HEMI###----
 #infile image id key
-hemikey<-read.csv("/rsync/box/Darshi work/STORY leaf movement/raw data/16DR_LR_hemi_key.csv",header=T,stringsAsFactors=F)
+hemikey<-read.csv("./data/raw_data/16DR_LR_hemi_key.csv",header=T,stringsAsFactors=F)
 #infile hemiview output values 
-hemiraw<-read.csv("/rsync/box/Darshi work/STORY leaf movement/raw data/16DR_LR_hemi_data.csv",header=T,stringsAsFactors=F)
+hemiraw<-read.csv("./data/raw_data/16DR_LR_hemi_data.csv",header=T,stringsAsFactors=F)
 
 #remove first column from each (dummy count)
 hemikey<-hemikey[-c(1)]
@@ -78,7 +78,7 @@ camGSF
 
 ###POPULATION SCORE###----
 #infile roll score data
-scoreraw<-read.csv("/rsync/box/Setaria/2016 Setaria/16DR fieldbook output/Behavior_962016_095456.csv",header=F, stringsAsFactors=F,na.strings=".")
+scoreraw<-read.csv("./data/raw_data/Behavior_962016_095456.csv",header=F, stringsAsFactors=F,na.strings=".")
 #column names
 colnames(scoreraw)[2]<-"trait"
 colnames(scoreraw)[3]<-"subplot_id"
@@ -167,7 +167,7 @@ hist(scoresub$score)
 
 ###STAMP###----
 #infile roll and inclination data data 
-stampraw<-read.csv("/rsync/box/Setaria/2016 Setaria/raw data/16DR leaf rolling heat dome diurnal.csv",header=T, stringsAsFactors=F,na.strings=".")
+stampraw<-read.csv("./data/raw_data/16DR leaf rolling heat dome diurnal.csv",header=T, stringsAsFactors=F,na.strings=".")
 #make data columns numeric
 stampraw$inclination<-as.numeric(stampraw$inclination)
 stampraw$obtuse<-as.numeric(stampraw$obtuse)
@@ -261,8 +261,8 @@ grid.arrange(box_inclination, box_roll, box_GSF, box_score)
 ###OUTPUT###
 #output .Rdata for population level score data and subset evaluation data 
 
-save(combo, file="data_subset_LR.Rdata")
-save(visual_score1, file="data_population_score.Rdata")
+save(combo, file="./data/clean_data/data_subset_LR.Rdata")
+save(visual_score1, file="./data/clean_data/data_population_score.Rdata")
 
 
 
