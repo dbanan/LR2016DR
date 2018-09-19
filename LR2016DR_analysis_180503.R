@@ -47,7 +47,7 @@ load("LR2016DR_analysis_180511.Rdata")
 
 #####LOAD#####
 #bring in the equivalent of step2 data (formatted, duplicates removed, outliers flagged)
-setwd("/rsync/box/Setaria/2016 Setaria/data analysis")
+
 load("step2_16DR_harvest_traits.RData")
 load("step2_16DR_harvest_weights.RData")
 load("step2_16DR_panicle_emergence.RData")
@@ -680,7 +680,8 @@ capture.output(summary(results), file="/rsync/box/Darshi work/LAB MEETINGS/BANAN
 #####CORRELATIONS#####
 
 #dry architecture 
-pairs(combine_wide[,c("d_S0", "d_PE", "d_CH", "d_TH", "d_TN", "d_BN", "d_BW", "d_RV")])
+pairs(combine_wide[,c("d_S0", "d_PE", "d_CH", "d_TH", "d_TN", "d_BN"
+                      , "d_BW", "d_RV")])
 #architecture response 
 pairs(combine_wide[,c("d_RS", "d_PE", "r_CH", "r_TH", "r_TN", "r_BN", "r_BW", "r_RV")])
 

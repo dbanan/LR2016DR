@@ -1,4 +1,4 @@
-#data_prep_LR
+s#data_prep_LR
 
 #gather and prepare leaf rolling data from 2016 field experiment 
 #15 genotype in depth test
@@ -52,8 +52,8 @@ hemiraw1$date[hemiraw1$time=="dawn"]<-"7/23/2016"
 #split data camera wide
 camera.LAI<-dcast(hemiraw1, subplot_id+time~camera, value.var="LAI")
 camera.GSF<-dcast(hemiraw1, subplot_id+time~camera, value.var="GSF")
-camLAI<-ggplot(camera.LAI,aes(x=LGP_001,y=LGP_002))+geom_point()+labs(title="LAI camera comparison")+geom_smooth(method="lm")
-camGSF<-ggplot(camera.GSF,aes(x=LGP_001,y=LGP_002))+geom_point()+labs(title="GSF camera comparison")+geom_smooth(method="lm")
+ggplot(camera.LAI,aes(x=LGP_001,y=LGP_002))+geom_point()+labs(title="LAI camera comparison")+geom_smooth(method="lm")
+ggplot(camera.GSF,aes(x=LGP_001,y=LGP_002))+geom_point()+labs(title="GSF camera comparison")+geom_smooth(method="lm")
 
 #boxplots at individual observation level 
 hemiraw2<-merge(hemiraw1, design16dr, by=c("subplot_id"))
@@ -67,10 +67,6 @@ hemi<-hemiraw1[,c(5,6,33,10,12,14,28)]
 
 #idenfity the subplots used in the 15 genotypes subset 
 subset15<-unique(hemi$subplot_id)
-
-#export plots
-camLAI
-camGSF
 
 #hemi END
 
@@ -132,34 +128,40 @@ score_rank
 visual_score<-scoreraw[,c(1,15,14,12,5)]
 
 #trial various compressed score scales 
-visual_score$score4<-visual_score$score
-visual_score$score4[visual_score$score>3]<-3
+#visual_score$score4<-visual_score$score
+#visual_score$score4[visual_score$score>3]<-3
 
-visual_score$score3<-visual_score$score
-visual_score$score3[visual_score$score>2]<-2
+visual_score$data<-visual_score$score
+visual_score$data[visual_score$score>3]<-3
+visual_score$trait<-"score"
+visual_score$score<-NULL
 
-visual_score$score2<-visual_score$score
-visual_score$score2[visual_score$score>1]<-1
+#visual_score$score3<-visual_score$score
+#visual_score$score3[visual_score$score>2]<-2
 
-visual_score1<-melt(visual_score, id.vars=c("subplot_id", "rep", "treatment", "genotype"), measure.vars=c("score", "score2", "score3", "score4"), variable.name="trait",  value.name="data")
+#visual_score$score2<-visual_score$score
+#visual_score$score2[visual_score$score>1]<-1
+
+#visual_score1<-melt(visual_score, id.vars=c("subplot_id", "rep", "treatment", "genotype"), measure.vars=c("score", "score2", "score3", "score4"), variable.name="trait",  value.name="data")
 
 
 
 ###SUBSET SCORE###----
 #SCORE FOR 15 GENOTYPE SUBSET 
 #subset to observations that match with stamp and hemi 
-scoresub<-subset(scoreraw, subplot_id %in% subset15)
+scoresub<-subset(visual_score, subplot_id %in% subset15)
+#scoresub<-subset(scoresub, trait=="score4")
 scoresub$time<-"midday"
 scoresub$date<-"7/21/2016"
 scoresub$trait<-"score"
 
 #trim
-scorelong<-scoresub[,c(1,16,4,3,5)]
-colnames(scorelong)[5]<-"data"
+scorelong<-scoresub[,c(1,7,5,6)]
+scorelong$subsample<-1
 rownames(scorelong)<-c()
 
 #subset score distribution
-hist(scoresub$score)
+hist(scoresub$data)
 
 #score END
 
@@ -183,7 +185,7 @@ colnames(stamp)[5]<-"roll"
 
 ###SUBSET COMBO###----
 #make them all long
-hemilong<-melt(hemi,id.vars=c("subplot_id","time","subsample"),measure.vars=c("DSF","ISF","GSF","LAI"),variable.name="trait",value.name="data")
+hemilong<-melt(hemi,id.vars=c("subplot_id","time","subsample"),measure.vars=c("GSF","LAI"),variable.name="trait",value.name="data")
 stamplong<-melt(stamp,id.vars=c("subplot_id","time","subsample"),measure.vars=c("inclination","roll"),variable.name="trait",value.name="data")
 #stack 
 combo<-rbind(hemilong, stamplong, scorelong)
@@ -193,8 +195,7 @@ combo1<-merge(combo, design16dr, by=c("subplot_id"))
 combobox<-ggplot()+geom_boxplot(data=combo1, aes(factor(time), data, fill=factor(treatment)))+facet_wrap(~trait, scale="free")+theme(legend.position="none")
 combobox
 
-#trim boxplots to just traits of interest, add zeros to score
-combo2<-subset(combo1, trait=="GSF"|trait=="inclination"|trait=="roll"|trait=="score")
+#add zeros to score
 
 #dummy score data 
 plots<-subset(design16dr, subplot_id %in% subset15)
@@ -213,34 +214,39 @@ plots_m$rep<-1
 
 
 #join dummy score data with rest of subset traits 
-combo3<-rbind(combo2, plots_d, plots_m)
+combo2<-rbind(combo1, plots_d, plots_m)
+
+
+
+
+
 
 #plots
-combobox_trim<-ggplot()+geom_boxplot(data=combo3, aes(factor(time), data, fill=factor(treatment)))+facet_wrap(~trait, scale="free")+theme(legend.position="none")
+combobox_trim<-ggplot()+geom_boxplot(data=combo2, aes(factor(time), data, fill=factor(treatment)))+facet_wrap(~trait, scale="free")+theme(legend.position="none")
 combobox_trim
 
-box_GSF<-ggplot(subset(combo3,trait %in% c("GSF")))+geom_boxplot(aes(factor(time), data, fill=factor(treatment)))+labs(list(title="(C) Global site factor",x=NULL,y="proportion PPFD"))+theme(legend.position="none")+
+box_GSF<-ggplot(subset(combo2,trait %in% c("GSF")))+geom_boxplot(aes(factor(time), data, fill=factor(treatment)))+labs(list(title="(C) Global site factor",x=NULL,y="proportion PPFD"))+theme(legend.position="none")+
   theme(panel.background=element_rect(fill=NA),
         panel.border=element_rect(fill=NA,color="black"),
         axis.text=element_text(size=14),
         axis.title=element_text(size=14), 
         title=element_text(size=14)
   )
-box_inclination<-ggplot(subset(combo3,trait %in% c("inclination")))+geom_boxplot(aes(factor(time), data, fill=factor(treatment)))+labs(list(title="(A) Leaf inclination angle",x=NULL,y="degrees"))+theme(legend.position="none")+
+box_inclination<-ggplot(subset(combo2,trait %in% c("inclination")))+geom_boxplot(aes(factor(time), data, fill=factor(treatment)))+labs(list(title="(A) Leaf inclination angle",x=NULL,y="degrees"))+theme(legend.position="none")+
   theme(panel.background=element_rect(fill=NA),
         panel.border=element_rect(fill=NA,color="black"),
         axis.text=element_text(size=14),
         axis.title=element_text(size=14), 
         title=element_text(size=14)
   )
-box_roll<-ggplot(subset(combo3,trait %in% c("roll")))+geom_boxplot(aes(factor(time), data, fill=factor(treatment)))+labs(list(title="(B) Leaf roll angle",x=NULL,y="degrees"))+theme(legend.position="none")+
+box_roll<-ggplot(subset(combo2,trait %in% c("roll")))+geom_boxplot(aes(factor(time), data, fill=factor(treatment)))+labs(list(title="(B) Leaf roll angle",x=NULL,y="degrees"))+theme(legend.position="none")+
   theme(panel.background=element_rect(fill=NA),
         panel.border=element_rect(fill=NA,color="black"),
         axis.text=element_text(size=14),
         axis.title=element_text(size=14), 
         title=element_text(size=14)
   )
-box_score<-ggplot(subset(combo3,trait %in% c("score")))+geom_boxplot(aes(factor(time), data, fill=factor(treatment)))+labs(list(title="(D) Plot roll score",x=NULL,y="score"))+theme(legend.position="none")+
+box_score<-ggplot(subset(combo2,trait %in% c("score")))+geom_boxplot(aes(factor(time), data, fill=factor(treatment)))+labs(list(title="(D) Plot roll score",x=NULL,y="score"))+theme(legend.position="none")+
   theme(panel.background=element_rect(fill=NA),
         panel.border=element_rect(fill=NA,color="black"),
         axis.text=element_text(size=14),
@@ -261,8 +267,8 @@ grid.arrange(box_inclination, box_roll, box_GSF, box_score)
 ###OUTPUT###
 #output .Rdata for population level score data and subset evaluation data 
 
-save(combo, file="./data/clean_data/data_subset_LR.Rdata")
-save(visual_score1, file="./data/clean_data/data_population_score.Rdata")
+save(combo2, file="./data/clean_data/data_subset_LR.Rdata")
+save(visual_score, file="./data/clean_data/data_population_score.Rdata")
 
 
 
