@@ -1,6 +1,14 @@
 #LR2016DR_analysis 
 
 
+library(plyr)
+library(ggplot2)
+library(reshape2)
+library(GGally)
+library(lsmeans)
+
+
+
 save(combo, file="./data/clean_data/data_subset_LR.Rdata")
 save(visual_score1, file="./data/clean_data/data_population_score.Rdata")
 save(combine, file="./data/clean_data/data_population_plant.Rdata")
@@ -191,6 +199,7 @@ dev.off()
 
 
 
+
 ggplot(data=combinel, aes(x=data))+
   geom_histogram()+
   facet_wrap(~abb_type, scales="free")
@@ -205,22 +214,6 @@ ggplot(data=trythis, aes(x=data, color=type))+
 
 
 
-visualg<-ddply(visual_score, c("genotype"), summarise, score=mean(data))
-
-
-
-
-
-#join plant data and score data
-plant<-rbind(visual_score, combine1)
-
-
-#genotype averages 
-plantAve<-ddply(plant, c("genotype","treatment","trait"), summarise, average=mean(data))
-
-#wide by trait for pairs plots 
-plantw<-dcast(plantAve )
-subsetw<-dcast(combine_subset, genotype+abb+trait~treatment, value.var="data")
 
 
 
@@ -263,17 +256,67 @@ ggplot()+geom_boxplot(data=combo2, aes(factor(time), data, fill=factor(treatment
 #calculate genotype averages from subset15 data 
 combog<-ddply(combo2, c("genotype","treatment","time","trait"), summarise, average=mean(data))
 #visualize 
-ggplot()+geom_boxplot(data=combog, aes(factor(time), average, fill=factor(treatment)))+facet_wrap(~trait, scale="free")+theme(legend.position="none")
+ggplot()+
+  geom_boxplot(data=combog, aes(factor(time), average, fill=factor(treatment)))+
+  facet_wrap(~trait, scale="free")+
+  theme(legend.position="none")
 
 
-#calculate time change (inclination, roll, GSF in dry plots)
-#wide by time 
+ggplot()+
+  geom_jitter(data=combog, aes(interaction(treatment, time), average, color=treatment))+
+  facet_wrap(~trait, scales="free")
+
+
+
+
+#raw data trait correlations? (color points by time and treatment)
+#wide by trait 
+combot<-dcast(combog, genotype+treatment+time~trait, value.var="average")
+ggpairs(combot, columns=(4:8), aes(color=interaction(treatment, time), shape=time))
+
+combot1<-subset(combot, time=="midday")
+combot1<-subset(combot1, treatment=="dry")
+
+ggpairs(combot1, columns=(4:8), aes(shape=time))
+
+
+
+#correlation of time and treatment differences 
+#calculate time change (inclination, roll, GSF in dry plots), wide by time 
 combow_time<-dcast(combog, trait+genotype+treatment~time, value.var="average")
 combow_time$diff_time<-combow_time$midday-combow_time$dawn
+combow_time$per_time<-combow_time$midday/combow_time$dawn
 
-#calculate treatment change (PAI)
+#wide by trait (try percents)
+combow_timew<-dcast(combow_time, genotype+treatment~trait, value.var="per_time")
+
+combow_timew1<-subset(combow_timew, treatment=="dry")
+ggpairs(combow_timew1, columns=(3:6), lower=list(continuous="smooth"))
+
+
+
+combol_time<-melt(combow_time, id.vars=c("genotype","treatment"), measure.vars=c("dawn","midday","diff_time","per_time"), variable.name="type",value.name="data")
+
+combol_time$difference<-paste(combol_time$treatment, combol_time$type, sep="_")
+
+
+#calculate treatment change (PAI), wide by treatment 
 combow_trt<-dcast(combog, trait+genotype+time~treatment, value.var="average")
-combow_trt$diff_trt<-combow_trt$dry-combow$trt$wet
+combow_trt$diff_trt<-combow_trt$dry-combow_trt$wet
+
+#trim to treatment and rename traits, columns 
+combow_time1<-subset(combow_time, treatment=="dry")
+
+
+combow_trt1<-subset(combow_trt, time=="dawn")
+combow_trt1<-subset(combow_trt1, trait=="LAI")
+
+
+combow_time1<-combow_time[,c(1,2,6)]
+combow_trt1<-combow_trt[,c(1,2,6)]
+
+combow_both<-merge()
+
 
 
 
