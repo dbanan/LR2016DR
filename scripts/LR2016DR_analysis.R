@@ -269,6 +269,7 @@ ggplot()+
 
 
 
+
 #raw data trait correlations? (color points by time and treatment)
 #wide by trait 
 combot<-dcast(combog, genotype+treatment+time~trait, value.var="average")
@@ -294,6 +295,13 @@ combow_timew1<-subset(combow_timew, treatment=="dry")
 ggpairs(combow_timew1, columns=(3:6), lower=list(continuous="smooth"))
 
 
+#join subset 15 time differences with score and LAI treatment differences and harvest TM, height etc 
+plant15<-subset(combine1, subplot_id %in% subset15)
+score15<-subset(visual_score, subplot_id %in% subset15)
+
+
+
+
 
 combol_time<-melt(combow_time, id.vars=c("genotype","treatment"), measure.vars=c("dawn","midday","diff_time","per_time"), variable.name="type",value.name="data")
 
@@ -303,11 +311,9 @@ combol_time$difference<-paste(combol_time$treatment, combol_time$type, sep="_")
 #calculate treatment change (PAI), wide by treatment 
 combow_trt<-dcast(combog, trait+genotype+time~treatment, value.var="average")
 combow_trt$diff_trt<-combow_trt$dry-combow_trt$wet
+combow_trt$per_trt<-combow_trt$dry/combow_trt$wet
 
 #trim to treatment and rename traits, columns 
-combow_time1<-subset(combow_time, treatment=="dry")
-
-
 combow_trt1<-subset(combow_trt, time=="dawn")
 combow_trt1<-subset(combow_trt1, trait=="LAI")
 
