@@ -82,10 +82,9 @@ dev.off()
 
 
 
-png("~/Desktop/meeting_dendrogram_score_s4.png")
+png(file="./results/LRS_dendro.png")
 plot(as.phylo(hc_snp), tip.color=snp_pheno[,c(1317)])
 dev.off()
-
 
 
 

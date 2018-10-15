@@ -43,6 +43,10 @@ combine1<-merge(combine1, key, by="trait")
 combineg<-ddply(combine1, c("genotype", "treatment", "trait", "abb"), summarise, average=mean(data))
 visualg<-ddply(visual_score, c("genotype"), summarise, score=mean(data))
 
+png(file="./results/score_hist.png")
+hist(visualg$score)
+dev.off()
+
 
 #make wide by treatment (to calculate treatment differences and identify(?) absolutes)
 combinew<-dcast(combineg, genotype+trait+abb~treatment, value.var="average")
@@ -178,7 +182,7 @@ ggplot(data=combineww, aes(factor(score), VM_dry))+
   geom_text(data=grouping, aes(label=.group, x=factor(grouping$score), y=Inf))+
   theme_classic()
 
-png(file="./results/TMdry_v_score.png", height=700, width=700)
+png(file="./results/TMdry_v_score.png")
 ggplot(data=combineww, aes(factor(score), VM_dry))+
   #geom_boxplot()+
   geom_jitter(width=0.125)+
@@ -266,8 +270,16 @@ ggplot()+
   geom_jitter(data=combog, aes(interaction(treatment, time), average, color=treatment))+
   facet_wrap(~trait, scales="free")
 
+png(file="./results/subset_boxplot.png")
+ggplot()+
+  geom_boxplot(data=combog, aes(interaction(treatment, time), average, fill=factor(treatment)))+
+  #geom_jitter(data=combog, aes(interaction(treatment, time), average, color=treatment))+
+  facet_wrap(~trait, scale="free")
+dev.off()
 
-
+#need to do some sort of ?t-test? ?ANOVA? here to tell if distributions are different...
+#model is rolling = genotype * water * time 
+# or is genotype our observation??? 
 
 
 #raw data trait correlations? (color points by time and treatment)
@@ -292,12 +304,26 @@ combow_time$per_time<-combow_time$midday/combow_time$dawn
 combow_timew<-dcast(combow_time, genotype+treatment~trait, value.var="per_time")
 
 combow_timew1<-subset(combow_timew, treatment=="dry")
-ggpairs(combow_timew1, columns=(3:6), lower=list(continuous="smooth"))
+ggpairs(combow_timew1, columns=(3:7), lower=list(continuous="smooth"))
+
+png(file="./results/subset_percent_corr.png")
+ggpairs(combow_timew1, columns=(3:7), lower=list(continuous="smooth"))
+dev.off()
+
+#remove score column (full of NA and Inf)
+combow_timew1$score<-NULL
 
 
 #join subset 15 time differences with score and LAI treatment differences and harvest TM, height etc 
 plant15<-subset(combine1, subplot_id %in% subset15)
 score15<-subset(visual_score, subplot_id %in% subset15)
+
+#new score column merge to wide diurnal change dataset
+score15<-score15[,c(2,5)]
+colnames(score15)<-c("genotype","score")
+combow_timew1<-merge(combow_timew1, score15, by=c("genotype"))
+
+
 
 
 
