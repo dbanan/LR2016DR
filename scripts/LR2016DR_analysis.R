@@ -126,8 +126,6 @@ pairs(combineww[,c("score",
 
 
 ggplot(data=combineww, aes(x=score, y=TM_dry))+geom_point()+geom_smooth(method="lm")
-fit<-lm(formula=combineww$TM_dry~combineww$score)
-summary(fit)
 
 
 
@@ -138,7 +136,10 @@ ggplot(data=combineww, aes(x=score, y=LM_dry))+geom_point()+geom_smooth(method="
 ggplot(data=combineww, aes(x=score, y=SM_dry))+geom_point()+geom_smooth(method="lm")
 
 
-ggplot(data=combineww, aes(x=score, y=BN_dry))+geom_point()+geom_smooth(method="lm")
+ggplot(data=combineww, aes(x=score, y=CH_dry))+geom_point()+geom_smooth(method="lm")
+fit<-lm(formula=combineww$CH_dry~combineww$score)
+summary(fit)
+
 
 ggplot(data=combineww, aes(x=factor(score), y=TM_dry))+
   geom_jitter(width=0.12, aes(size=RV_dry))
@@ -257,6 +258,8 @@ subset15<-unique(combo2$subplot_id)
 
 ggplot()+geom_boxplot(data=combo2, aes(factor(time), data, fill=factor(treatment)))+facet_wrap(~trait, scale="free")+theme(legend.position="none")
 
+
+
 #calculate genotype averages from subset15 data 
 combog<-ddply(combo2, c("genotype","treatment","time","trait"), summarise, average=mean(data))
 #visualize 
@@ -277,6 +280,17 @@ ggplot()+
   facet_wrap(~trait, scale="free")
 dev.off()
 
+#try some sort of response plot 
+ggplot(data=combog, aes(interaction(time, treatment), average, group=interaction(genotype, treatment)))+
+  geom_point(aes(color=treatment))+
+  geom_line(alpha=0.1)+
+  geom_text(aes(label=ifelse(time=="midday", as.character(genotype), '')), hjust=0, size=2)+
+  facet_wrap(~trait, scale="free")
+
+
+ggplot()
+
+
 #need to do some sort of ?t-test? ?ANOVA? here to tell if distributions are different...
 #model is rolling = genotype * water * time 
 # or is genotype our observation??? 
@@ -285,7 +299,8 @@ dev.off()
 #raw data trait correlations? (color points by time and treatment)
 #wide by trait 
 combot<-dcast(combog, genotype+treatment+time~trait, value.var="average")
-ggpairs(combot, columns=(4:8), aes(color=interaction(treatment, time), shape=time))
+ggpairs(combot, columns=(4:8), aes(color=interaction(treatment, time), shape=time), lower=list(continuous="smooth"))
+
 
 combot1<-subset(combot, time=="midday")
 combot1<-subset(combot1, treatment=="dry")
@@ -298,13 +313,21 @@ ggpairs(combot1, columns=(4:8), aes(shape=time))
 #calculate time change (inclination, roll, GSF in dry plots), wide by time 
 combow_time<-dcast(combog, trait+genotype+treatment~time, value.var="average")
 combow_time$diff_time<-combow_time$midday-combow_time$dawn
+combow_time$rel_time<-combow_time$diff_time/combow_time$dawn
 combow_time$per_time<-combow_time$midday/combow_time$dawn
+combow_time$logper_time<-log(combow_time$per_time)
 
 #wide by trait (try percents)
-combow_timew<-dcast(combow_time, genotype+treatment~trait, value.var="per_time")
+combow_timew<-dcast(combow_time, genotype+treatment~trait, value.var="rel_time")
+
+
+ggpairs(combow_timew, columns=(3:6), aes(color=treatment), lower=list(continuous="smooth"))
+
 
 combow_timew1<-subset(combow_timew, treatment=="dry")
 ggpairs(combow_timew1, columns=(3:7), lower=list(continuous="smooth"))
+
+
 
 png(file="./results/subset_percent_corr.png")
 ggpairs(combow_timew1, columns=(3:7), lower=list(continuous="smooth"))
