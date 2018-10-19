@@ -288,7 +288,13 @@ ggplot(data=combog, aes(interaction(time, treatment), average, group=interaction
   facet_wrap(~trait, scale="free")
 
 
-ggplot()
+ggplot(data=subset(combo2, time=="midday"), aes(interaction(treatment, genotype), data))+
+  geom_boxplot(aes(fill=treatment))+
+  facet_wrap(~trait, scales="free")
+ggplot(data=subset(combo2, treatment=="dry"), aes(interaction(time, genotype), data))+
+  geom_boxplot(aes(fill=time))+
+  scale_fill_manual(values=c("purple","orange"))+
+  facet_wrap(~trait, scales="free")
 
 
 #need to do some sort of ?t-test? ?ANOVA? here to tell if distributions are different...
@@ -317,15 +323,34 @@ combow_time$rel_time<-combow_time$diff_time/combow_time$dawn
 combow_time$per_time<-combow_time$midday/combow_time$dawn
 combow_time$logper_time<-log(combow_time$per_time)
 
-#wide by trait (try percents)
-combow_timew<-dcast(combow_time, genotype+treatment~trait, value.var="rel_time")
+#remove score (no sense in calculating difference)
+combow_time<-combow_time[!(combow_time$trait=="score"),]
+
+#combine trait and treatment 
+combow_time$trait_trt<-paste(combow_time$treatment, combow_time$trait, sep="_")
+
+#boxplot of differences 
+#by genotype individually 
+ggplot(data=combow_time, aes(genotype, logper_time, fill=treatment))+
+  geom_bar(stat="identity", position=position_dodge())+
+  facet_wrap(~trait)
+#genotypes grouped 
+ggplot(data=combow_time, aes(factor(treatment), logper_time, fill=treatment))+
+  geom_boxplot()+
+  facet_wrap(~trait)
 
 
-ggpairs(combow_timew, columns=(3:6), aes(color=treatment), lower=list(continuous="smooth"))
 
 
-combow_timew1<-subset(combow_timew, treatment=="dry")
-ggpairs(combow_timew1, columns=(3:7), lower=list(continuous="smooth"))
+
+#wide by trait to enable correlations 
+combow_timew<-dcast(combow_time, genotype~trait_trt, value.var="logper_time")
+
+#correlation of wet and dry time differences 
+ggpairs(combow_timew, columns=(2:9), lower=list(continuous="smooth"))
+
+
+
 
 
 
