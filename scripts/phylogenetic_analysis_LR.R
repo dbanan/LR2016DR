@@ -24,7 +24,7 @@ genotypes<-unique(visual_score1$genotype)
 
 #trim phenotypes to just those of interest 
 pheno<-subset(visual_score1, visual_score1$trait=="score4")
-pheno<-ddply(pheno, c("genotype"), summarise, score4=max(data))
+pheno<-ddply(pheno, c("genotype"), summarise, score4=mean(data))
 
 
 
@@ -38,6 +38,8 @@ snp_pos$marker<-paste(snp_pos$V1, snp_pos$V2, sep="_")
 snp_pos<-as.vector(snp_pos[,3])
 
 snp_indv<-read.table("~/Desktop/snp_100k/snp_100k_phylo.012.indv", header=F, sep="\t", stringsAsFactors=FALSE)
+
+
 
 colnames(snp_012)<-snp_pos  
 rownames(snp_012)<-snp_indv$V1
@@ -61,14 +63,16 @@ hc_snp<-hclust(d_snp)
 
 plot(hc_snp)
 
+
 dend<-as.dendrogram(hc_snp)
+
 
 
 
 
 labels_colors(dend) <-
   rainbow_hcl(3)[sort_levels_values(
-    as.numeric(snp_pheno[,1318])[order.dendrogram(dend)]
+    as.numeric(snp_pheno[,1317])[order.dendrogram(dend)]
   )]
 
 labels(dend)<-as.character(snp_pheno[,1])[order.dendrogram(dend)]
