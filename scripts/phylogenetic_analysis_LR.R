@@ -62,12 +62,18 @@ snp_pheno$genotype<-NULL
 #snp_map<-t(snp_012)
 #snp_map<-as.data.frame(snp_map)
 
-d_snp<-dist(snp_pheno[,1:1316])
+#code label color as a column 
+snp_pheno1<-snp_pheno
+snp_pheno1$color[snp_pheno1$score4==0]<-"red"
+snp_pheno1$color[snp_pheno1$score4==1]<-"orange"
+snp_pheno1$color[snp_pheno1$score4==2]<-"blue"
+
+#calculate distances and clusters 
+d_snp<-dist(snp_pheno1[,1:1316])
 hc_snp<-hclust(d_snp)
 
-
+#simple visualization 
 plot(hc_snp, hang=-1)
-
 
 dend<-as.dendrogram(hc_snp)
 plot(dend)
@@ -75,28 +81,35 @@ plot(dend)
 
 #two ways to show denodrogram 
 #one way
-lab.color=matrix("black",nrow(snp_pheno))
-lab.color[which(score4==0)]="red"
-lab.color[which(score4==1)]="orange"
-lab.color[which(score4==2)]="blue"
+#lab.color=matrix("black",nrow(snp_pheno))
+#rownames(lab.color)=rownames(snp_pheno)
+#lab.color[which(score4==0)]="red"
+#lab.color[which(score4==1)]="orange"
+#lab.color[which(score4==2)]="blue"
 
-plot(as.phylo(hc_snp), cex = 0.6, tip.color = lab.color, label.offset = .75, type="fan")
+#plot(as.phylo(hc_snp), cex = 0.6, tip.color = lab.color, label.offset = .75, type="fan")
 
 png("./results/phylo_score.png", height=900, width=900)
-plot(as.phylo(hc_snp), cex = 0.6, tip.color = lab.color, label.offset = .75, type="fan")
+plot(as.phylo(hc_snp), tip.color=snp_pheno1[,c(1318)], type="fan")
 dev.off()
+
+
+
 
 
 #another way
 dend=as.dendrogram(hc_snp)
-labels_colors(dend)=lab.color[order.dendrogram(dend)]
+labels_colors(dend)<-snp_pheno1$color[order.dendrogram(dend)]
+#labels_colors(dend)=lab.color[order.dendrogram(dend)]
 dend<-color_branches(dend, k=5)
 plot(dend)
-circlize_dendrogram(dend, labels_track_height = NA, dend_track_height = .4)
 
-png("./results/phylo_score.png", height=1200, width=1200)
+png("./results/phylo_score_circle.png", height=1200, width=1200)
 circlize_dendrogram(dend, labels_track_height = NA, dend_track_height = .4)
 dev.off()
+
+
+
 
 
 
