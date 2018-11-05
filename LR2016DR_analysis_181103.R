@@ -6,7 +6,7 @@ library(ggplot2)
 library(reshape2)
 library(GGally)
 library(lsmeans)
-
+library(gridExtra)
 
 
 save(combo, file="./data/clean_data/data_subset_LR.Rdata")
@@ -62,7 +62,7 @@ combinew$dw_percent<-combinew$dry/combinew$wet
 combinew$log_percent<-log(combinew$dw_percent)
 combinew$mid_diff<-combinew$dw_diff/((combinew$dry+combinew$wet)/2)
 
-  
+
 #long by data type (dry, wet, difference, etc) 
 combinel<-melt(combinew, id.vars=c("genotype","trait","abb"), measure.vars=c("dry","wet","dw_diff","abs_diff","rel_diff","dw_percent","log_percent","mid_diff"), variable.name="type",value.name="data")
 #trait_type combination 
@@ -94,7 +94,7 @@ pairs(combineww[,c("score",
                    "LN_dry",
                    "RV_dry",
                    "PE_dry"
-                   )])
+)])
 
 pairs(combineww[,c("score",
                    "TM_wet",
@@ -149,13 +149,15 @@ fit<-lm(formula=combineww1$CH_dry~combineww1$score)
 summary(fit)
 
 png(file="./results/score_v_CHdry.png")
-ggplot(data=combineww1, aes(x=score, y=CH_dry))+
-  geom_point()+
-  geom_smooth(method="lm", se=FALSE, color="black")+
+scoreVch<-ggplot(data=combineww1, aes(x=score, y=CH_dry))+
+  geom_point(color=combineww1$sibling)+
+  geom_smooth(method="lm", se=FALSE, color="black", size=0.5)+
+  ylim(0,NA)+
   geom_text(aes(x=2, y=810, label="y = 47.76x + 337.30"))+
   geom_text(aes(x=2, y=790, label="p-value = 0.002"))+
   geom_text(aes(x=2, y=770, label="r-squared = 0.04"))+
-  theme_classic()
+  theme(panel.background = element_rect(fill = "white", colour = "black"))
+scoreVch
 dev.off()
 
 
@@ -173,9 +175,9 @@ leastsquare = lsmeans(model,
                       adjust = "tukey")
 
 grouping<-cld(leastsquare,
-    alpha   = 0.05,
-    Letters = letters,
-    adjust="tukey")
+              alpha   = 0.05,
+              Letters = letters,
+              adjust="tukey")
 
 #place grouping letters above boxes 
 ggplot(data=combineww, aes(factor(score), VM_dry))+
@@ -199,20 +201,21 @@ ggplot(data=combineww, aes(factor(score), TM_dry))+
 dev.off()
 
 png(file="./results/score_v_VMdry.png")
-ggplot(data=combineww, aes(factor(score), VM_dry))+
+scoreVvm<-ggplot(data=combineww1, aes(factor(score), VM_dry))+
   #geom_boxplot()+
-  geom_jitter(width=0.125)+
-  stat_summary(fun.y=mean, color="red", geom="point")+
+  geom_jitter(width=0.125, color=combineww1$sibling)+
+  #stat_summary(fun.y=mean, color="blue", geom="point")+
   geom_text(data=check, aes(label=round(VM_dry, 2), y=VM_dry), size=3)+
-  geom_text(data=number, aes(label=VM_dry, y=0))+
-  geom_text(data=grouping, aes(label=.group, x=factor(grouping$score), y=Inf))+
-  theme_classic()
+  geom_text(data=number, aes(label=VM_dry, y=0), size=3)+
+  geom_text(data=grouping, aes(label=.group, x=factor(grouping$score), y=6), size=3)+
+  theme(panel.background = element_rect(fill = "white", colour = "black"))
+scoreVvm
 dev.off()
 
 
-
-
-
+png("./results/scoreVchvm.png", width=700, height=400)
+grid.arrange(scoreVch, scoreVvm, ncol=2)
+dev.off()
 
 
 
@@ -251,51 +254,61 @@ sibling<-c("TB_0612",
            "TB_0540",
            "TB_0534",
            "TB_0480"
-           )
+)
 
 sibling0<-c("TB_0612",
-           "TB_0368",
-           "TB_0462",
-           "TB_0335",
-           "TB_0239",
-           "TB_0003",
-           "TB_0446",
-           "TB_0581",
-           "TB_0436",
-           "TB_0433",
-           "TB_0386",
-           "TB_0382",
-           "TB_0095",
-           "TB_0508",
-           "TB_0476",
-           "TB_0509",
-           "TB_0037",
-           "TB_0460",
-           "TB_0125",
-           "TB_0420",
-           "TB_0269",
-           "TB_0129",
-           "TB_0206",
-           "TB_0343",
-           "TB_0255",
-           "TB_0205",
-           "TB_0015",
-           "TB_0496",
-           "TB_0050",
-           "TB_0486",
-           "TB_0477",
-           "TB_0054",
-           "TB_0513"
-           )
+            "TB_0368",
+            "TB_0462",
+            "TB_0335",
+            "TB_0239",
+            "TB_0003",
+            "TB_0446",
+            "TB_0581",
+            "TB_0436",
+            "TB_0433",
+            "TB_0386",
+            "TB_0382",
+            "TB_0095",
+            "TB_0508",
+            "TB_0476",
+            "TB_0509",
+            "TB_0037",
+            "TB_0460",
+            "TB_0125",
+            "TB_0420",
+            "TB_0269",
+            "TB_0129",
+            "TB_0206",
+            "TB_0343",
+            "TB_0255",
+            "TB_0205",
+            "TB_0015",
+            "TB_0496",
+            "TB_0050",
+            "TB_0486",
+            "TB_0477",
+            "TB_0054",
+            "TB_0513"
+)
 
 combineww2<-subset(combineww1, genotype %in% sibling)
 combineww1$sibling[combineww1$genotype %in% sibling]<-"black"
 combineww1$sibling[is.na(combineww1$sibling)]<-"grey"
 
-ggplot(data=combineww2, aes(factor(score), VM_dry))+
+png(file="./results/scoreVMdiff.png", width=700, height=400)
+grid.arrange(
+ggplot(data=combineww1, aes(factor(score), VM_rel_diff))+
   #geom_boxplot()+
-  geom_jitter(width=0.125)+
-  theme_classic()
+  geom_jitter(width=0.125, color=combineww1$sibling)+
+  geom_hline(yintercept=0)+
+  theme(panel.background = element_rect(fill = "white", colour = "black")),
+ggplot(data=combineww1, aes(factor(score), CH_rel_diff))+
+  #geom_boxplot()+
+  geom_jitter(width=0.125, color=combineww1$sibling)+
+  geom_hline(yintercept=0)+
+  theme(panel.background = element_rect(fill = "white", colour = "black")),
+ncol=2)
+dev.off()
 
 ggplot(data=combineww1, aes(factor(score), VM_dry))+
   #geom_boxplot()+
@@ -305,6 +318,7 @@ ggplot(data=combineww1, aes(factor(score), VM_dry))+
 ggplot(data=combineww1, aes(score, CH_dry))+
   #geom_boxplot()+
   geom_point(color=combineww1$sibling)+
+  geom_smooth(method="lm", se=FALSE, color="black")+
   theme_classic()
 
 
@@ -372,19 +386,38 @@ subset15<-unique(combo2$subplot_id)
 #have multiple measurements (subsamples) for some traits (roll angle, inclination angle)
 #have 15 geno 
 
-ggplot()+geom_boxplot(data=combo3, aes(factor(time), data, fill=factor(treatment)))+facet_wrap(~trait, scale="free")+theme(legend.position="none")
+#combo2 is the infiled data 
+ggplot(data=combo2, aes(factor(time), data, fill=factor(treatment)))+
+  geom_boxplot()+
+  facet_wrap(~trait, scales="free")+
+  theme(legend.position="none")
+
+#look for outliers
+look<-subset(combo2, trait %in% c("GSF", "LAI", "inclination", "roll"))
+look1<-subset(look, genotype=="TB_0348")
+ggplot(data=look1, aes(factor(interaction(subsample, time, treatment)), color=(interaction(time, treatment)), data))+
+  geom_point()+
+  geom_line(aes(group=genotype), alpha=0.25)+
+  facet_wrap(~trait, scale="free")+
+  theme(legend.position="none")
 
 #remove very high LAI values 
 combo3<-combo2
-combo3$data[combo3$trait=="LAI" & combo3$data>2.6]<-NA
+combo3$data[combo3$trait=="LAI" & combo3$data>2.5]<-NA
+combo3$data[combo3$trait=="inclination" & combo3$data>70]<-NA
+
+
+
 
 #calculate genotype averages from subset15 data 
-combog<-ddply(combo3, c("genotype","treatment","time","trait"), summarise, average=mean(data))
+combog<-ddply(combo3, c("genotype","treatment","time","trait"), summarise, average=mean(data, na.rm=TRUE))
 #visualize 
 ggplot()+
   geom_boxplot(data=combog, aes(factor(time), average, fill=factor(treatment)))+
   facet_wrap(~trait, scale="free")+
   theme(legend.position="none")
+
+
 
 
 ggplot()+
@@ -399,13 +432,21 @@ ggplot()+
 dev.off()
 
 #try some sort of response plot 
-png(file="./results/subset_response.png")
-ggplot(data=combog, aes(interaction(time, treatment), average, group=interaction(genotype, treatment)))+
+#add to this the mean for each trait*time*treatment combo 
+png(file="./results/subset_rxn.png")
+rxn_raw<-ggplot(data=subset(combog, trait %in% c("GSF","LAI","inclination","roll")), aes(interaction(time, treatment), average, group=interaction(genotype, treatment)))+
   geom_point(aes(color=treatment))+
-  geom_line(alpha=0.1)+
+  geom_line(alpha=0.2)+
+  scale_x_discrete(labels = c("dawn","midday","dawn","midday"))+
+  ylim(0,NA)+
+  stat_summary(aes(interaction(time, treatment), average, label=round(..y..,2)), fun.y=mean, color="black", geom="text", inherit.aes = FALSE, size=3)+
   #geom_text(aes(label=ifelse(time=="midday", as.character(genotype), '')), hjust=0, size=2)+
-  facet_wrap(~trait, scale="free")
+  facet_wrap(~trait, scale="free", ncol=4)+
+  theme(panel.background = element_rect(fill = "white", colour = "black"))+
+  theme(legend.position="none", axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),axis.title.x=element_blank())
+rxn_raw
 dev.off()
+
 
 
 ggplot(data=subset(combo2, time=="midday"), aes(interaction(treatment, genotype), data))+
@@ -421,18 +462,22 @@ ggplot(data=subset(combo2, treatment=="dry"), aes(interaction(time, genotype), d
 #model is rolling = genotype * water * time 
 # or is genotype our observation??? 
 
-
 #raw data trait correlations? (color points by time and treatment)
 #wide by trait 
 combot<-dcast(combog, genotype+treatment+time~trait, value.var="average")
 ggpairs(combot, columns=(4:8), aes(color=interaction(treatment, time), shape=time), lower=list(continuous="smooth"))
 
-
 combot1<-subset(combot, time=="midday")
 combot1<-subset(combot1, treatment=="dry")
 
+png("./results/rolling_raw_corr.png")
 ggpairs(combot1, columns=(4:8), aes(shape=time))
+dev.off()
 
+ggplot(data=combot1, aes(x=roll, y=inclination))+
+  geom_point()+
+  geom_smooth(method="lm", se=FALSE, color="black", size=0.5)+
+  theme(panel.background = element_rect(fill = "white", colour = "black"))
 
 
 #correlation of time and treatment differences 
@@ -449,6 +494,32 @@ combow_time<-combow_time[!(combow_time$trait=="score"),]
 #combine trait and treatment 
 combow_time$trait_trt<-paste(combow_time$treatment, combow_time$trait, sep="_time_")
 
+#use percent (time_per) as difference metric going forward 
+combow_time1<-combow_time[,c(1:3,8)]
+
+#remove outliers 
+combow_time2<-combow_time1
+#combow_time2$time_per[combow_time2$trait=="LAI" & combow_time2$time_per>1.26]<-NA
+combow_time2$time_per[combow_time2$trait=="inclination" & combow_time2$time_per>2]<-NA
+combow_time2$time_per[combow_time2$treatment=="wet" & combow_time2$trait=="GSF" & combow_time2$time_per>1.4]<-NA
+combow_time2$time_per[combow_time2$trait=="GSF" & combow_time2$time_per<0.75]<-NA
+
+#boxplot of differences
+box_diff<-ggplot(data=combow_time2, aes(factor(treatment), time_per, fill=treatment))+
+  geom_boxplot()+
+  ylim(0,1.6)+
+  facet_wrap(~trait, ncol=4)+
+  theme(panel.background = element_rect(fill = "white", colour = "black"))+
+  theme(legend.position="none",axis.title.x=element_blank())
+box_diff
+
+png("./results/rxnRaw_boxDiff.png", width=700, height=400)
+grid.arrange(rxn_raw, box_diff)
+dev.off()
+
+#need to do a test to show the time differences are indeed different
+
+
 #plot of differences 
 #barplot by genotype individually 
 ggplot(data=combow_time, aes(genotype, time_logper, fill=treatment))+
@@ -461,17 +532,168 @@ ggplot(data=combow_time, aes(factor(treatment), time_per, fill=treatment))+
   facet_wrap(~trait, scales="free")
 dev.off()
 #genotypes individually as response plot 
-ggplot(data=combow_time, aes(treatment, time_per, group=genotype))+
+ggplot(data=combow_time2, aes(treatment, time_per, group=genotype))+
   geom_point(aes(color=treatment))+
   geom_line(alpha=0.1)+
   facet_wrap(~trait, scale="free")
 
 
 
+
+
+#combine diurnal time change with canopy temperature 
+rolling<-combow_time2
+colnames(rolling)[4]<-"data"
+temp<-CT16dr1[,c(2:5)]
+temp$data[temp$data>44]<-NA
+compare<-rbind(rolling, temp)
+#wide on trait 
+comparew<-dcast(compare, genotype+treatment~trait, value.var="data")
+
+#add score
+comparew2<-merge(comparew, score15, by="genotype")
+comparew2$score[comparew2$treatment=="wet"]<-0
+
+#delta rolling wet and dry combined
+ggpairs(comparew, columns=c(3:6), lower=list(continuous="smooth"))
+ggpairs(comparew2, columns=c(9,3:8), lower=list(continuous="smooth"), aes(color=treatment))
+
+
+#dry and wet deltas for leaf and canopy traits 
+png(file="./results/delta_wd_corr.png", width=700, height=700)
+ggpairs(comparew2, columns=c(3:6), lower=list(continuous="smooth"), aes(color=treatment), se=FALSE)
+dev.off()
+
+#delta rolling wet and dry with CT 
+png(file="./results/delta_wd_ct_corr.png")
+ggpairs(comparew2, columns=c(9,3:8), lower=list(continuous="smooth"), aes(color=treatment))
+dev.off()
+
+png(file="./results/delta_ct_corr.png")
+ggpairs(comparew, columns=c(3:8), lower=list(continuous="smooth"))
+dev.off()
+
+
+comparewd<-subset(comparew2, treatment=="dry")
+compareww<-subset(comparew2, treatment=="wet")
+
+comparewd<-comparewd[,c(1,3:6)]
+compareww<-compareww[,c(1,3:6)]
+
+colnames(comparewd)<-c("genotype","diff_dry_GSF","diff_dry_LAI","diff_dry_inclination","diff_dry_roll")
+colnames(compareww)<-c("genotype","diff_wet_GSF","diff_wet_LAI","diff_wet_inclination","diff_wet_roll")
+
+compare_wd<-merge(comparewd, compareww, by="genotype")
+
+
+png(file="./results/time_delta_wetdry_corr2.png", width=700, height=700)
+ggpairs(compare_wd, columns=c(2:9), lower=list(continuous="smooth"))
+dev.off()
+
+
+#maybe just focus on a couple "oddities"? 
+fit<-lm(formula=compare_wd$diff_wet_GSF~compare_wd$diff_dry_roll)
+summary(fit)
+
+
+png(file="./results/wetDryMismatch.png", width=500, height=270)
+grid.arrange( 
+ggplot(data=compare_wd, aes(x=diff_dry_roll, y=diff_wet_GSF))+
+  geom_point()+
+  geom_smooth(method="lm", se=FALSE, color="black", size=0.5)+
+  geom_text(label="y=0.26x+0.73 ** r^2=0.53", aes(0.7, 0.75))+
+  theme(panel.background = element_rect(fill = "white", colour = "black")),
+ggplot(data=compare_wd, aes(x=diff_dry_roll, y=diff_wet_inclination))+
+  geom_point()+
+  geom_hline(yintercept=1)+
+  geom_vline(xintercept=1)+
+  theme(panel.background = element_rect(fill = "white", colour = "black")),
+ncol=2)
+dev.off()
+  
+
+
+
+
+
+
+#relate rolling time delta to canopy temperature and biomass treatment delta 
+#comparew2
+#calculate dawn LAI treatment difference 
+
+laig<-subset(combog, time=="dawn" & trait=="LAI")
+laig<-laig[,c(1,2,4,5)]
+colnames(laig)[4]<-"data"
+
+
+laiw<-dcast(laig, genotype~treatment, value.var="data")
+laiw$trait<-"dawnLAI"
+laiw$trt_per<-laiw$dry/laiw$wet
+laiw1<-laiw[,c(1,5)]
+colnames(laiw1)[2]<-"dLAI_diff_trt"
+
+#merge LAI trt delta with rolling time delta and dry score 
+compare_big<-merge(compare_wd, laiw1, by="genotype")
+compare_big<-merge(compare_big, score15, by="genotype")
+
+
+#rolling + dLAI 
+rolling1<-subset(rolling, treatment=="dry")
+rolling1<-rolling1[,c(1,2,4)]
+score151<-score15
+score151$trait<-"score"
+colnames(score151)[2]<-"data"
+rolling2<-rbind(rolling1, score151)
+
+rollLAI<-merge(rolling2, laiw1, by="genotype")
+
+rollLAIcorr<-ggplot(data=subset(rollLAI, trait %in% c("GSF","roll","score")), aes(x=data, y=dLAI_diff_trt))+
+  geom_point()+
+  geom_smooth(method="lm", se=FALSE, color="black")+
+  facet_wrap(~trait, scales="free_x")+
+  theme(panel.background = element_rect(fill = "white", colour = "black"))
+rollLAIcorr
+
+#rolling + CT
+justroll<-subset(rolling, trait=="roll")
+justroll<-justroll[,c(2:4)]
+colnames(justroll)[3]<-"time_diff_roll"
+CT16dr3<-CT16dr2
+colnames(CT16dr3)<-c("treatment","genotype","trait","CT")
+rollCT<-merge(justroll, CT16dr3, by=c("genotype", "treatment"))
+
+rollCTcorr<-ggplot(data=rollCT, aes(x=time_diff_roll, y=CT, color=treatment))+
+  geom_point()+
+  geom_smooth(method="lm", se=FALSE)+
+  geom_smooth(method="lm", se=FALSE, inherit.aes=FALSE, linetype="dashed", aes(x=time_diff_roll, y=CT), color="black")+
+  facet_wrap(~trait)+
+  theme(panel.background = element_rect(fill = "white", colour = "black"), legend.position="none")
+rollCTcorr
+
+png("./results/roll_CT_LAI.png", width=700, height=400)
+grid.arrange(rollLAIcorr, rollCTcorr)
+dev.off()
+
+
+
+#score capture time delta rolling 
+rollingScore<-merge(rolling1, score15, by="genotype")
+png("./results/scoreRolling.png", width=700, height=400)
+ggplot(data=rollingScore, aes(x=data, y=score))+
+  geom_point()+
+  geom_smooth(method="lm", se=FALSE, color="black", size=0.5)+
+  theme(panel.background = element_rect(fill = "white", colour = "black"))+
+  facet_wrap(~trait, scales="free_x")
+dev.off()
+
+
+
+
+
 #delta rolling vs dawn inclination 
 dawninc<-subset(combow_time, trait=="inclination")
 dawninc<-dawninc[,c(2,3,4)]
-  
+
 dryroll<-subset(combow_time, trait=="roll")
 dryroll<-dryroll[,c(2,3,8)]
 
@@ -558,8 +780,11 @@ prodw_trt1$type<-"trt_diff"
 prodw_trt2<-prodw_trt1[,c(1,2,7,6)]
 colnames(prodw_trt2)[4]<-"data"
 
+combow_time3<-combow_time2
+colnames(combow_time3)[4]<-"data"
+colnames(combow_time3)[3]<-"type"
 #stack abs, time_diff, trt_diff 
-subset_stack<-rbind(abs_all, combow_time2, prodw_trt2)
+subset_stack<-rbind(abs_all, combow_time3, prodw_trt2)
 #paste type and trait into special trait to go wide with 
 subset_stack$special<-paste(subset_stack$type, subset_stack$trait, sep="_")
 
@@ -700,7 +925,7 @@ ggplot(specialw)+
   geom_point(aes(x=time_diff_dry_roll, y=trt_diff_LAI), color="blue")+
   #geom_smooth(method="lm", aes(x=time_diff_dry_roll, y=trt_diff_LAI), color="black")+
   geom_point(aes(x=time_diff_dry_roll, y=trt_diff_per_plant_total_mass), color="red")
-  #geom_smooth(method="lm", aes(x=time_diff_dry_roll, y=trt_diff_per_plant_total_mass), color="grey")
+#geom_smooth(method="lm", aes(x=time_diff_dry_roll, y=trt_diff_per_plant_total_mass), color="grey")
 
 
 #dry rolling time deltas correlate with each other and with LRS 
@@ -737,8 +962,8 @@ ggpairs(specialw, columns=c(15:18,21,22,28,29), lower=list(continuous="smooth"))
 ggplot(data=specialw, aes(x=time_diff_dry_roll, y=time_diff_dry_LAI))+
   geom_point()+
   geom_text(aes(label=genotype))
-  
-  
+
+
 ggplot(data=specialw, aes(x=time_diff_wet_inclination, y=time_diff_wet_LAI))+
   geom_point()+
   geom_text(aes(label=genotype))
