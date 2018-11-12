@@ -19,19 +19,21 @@ install.packages("colorspace")
 load("data_population_score.Rdata")
 
 
-#list of genotypes used in experiment 
-genotypes<-unique(visual_score1$genotype)
+
 
 #trim phenotypes to just those of interest (score4, 0-3)
 pheno<-subset(visual_score1, visual_score1$trait=="score4")
 pheno<-ddply(pheno, c("genotype"), summarise, score4=mean(data))
 
-#condense score further to three classes (no rolling, some rolling, severe rolling)
+#condense score further to four color classes (no rolling, light rolling, moderate rolling, severe rolling)
 pheno1<-pheno
-pheno1$score4[pheno1$score4>=0.5 & pheno1$score4<=1.5]<-1
+pheno1$score4[pheno1$score4==0]<-0
+pheno1$score4[pheno1$score4==0.5]<-0.5
+pheno1$score4[pheno1$score4>=1 & pheno1$score4<=1.5]<-1
 pheno1$score4[pheno1$score4>=2]<-2
 
-
+#list of genotypes used in experiment that we have phenotype (score) for
+genotypes<-unique(pheno1$genotype)
 
 #load genetic map 
 #work with filtered map 
@@ -65,7 +67,8 @@ snp_pheno$genotype<-NULL
 #code label color as a column 
 snp_pheno1<-snp_pheno
 snp_pheno1$color[snp_pheno1$score4==0]<-"red"
-snp_pheno1$color[snp_pheno1$score4==1]<-"orange"
+snp_pheno1$color[snp_pheno1$score4==0.5]<-"pink"
+snp_pheno1$color[snp_pheno1$score4==1]<-"yellow"
 snp_pheno1$color[snp_pheno1$score4==2]<-"blue"
 
 #calculate distances and clusters 
@@ -77,6 +80,10 @@ plot(hc_snp, hang=-1)
 
 dend<-as.dendrogram(hc_snp)
 plot(dend)
+
+
+
+
 
 
 #two ways to show denodrogram 
@@ -114,8 +121,28 @@ dev.off()
 
 
 
+#pull out distance matrix and extract metric for how close high rollers are from non rollers 
+#https://davetang.org/muse/2013/08/15/distance-matrix-computation/
 
 
+#extract distance matrix from dist()
+
+#highlight distances to high rollers 
+
+
+dmat<-as.matrix(d_snp)
+dmat1<-dmat[,rollhi]
+dmat2<-subset(dmat1, rownames(dmat1) %in% rollno)
+
+rollhi<-pheno1$genotype[pheno1$score4==2]
+rolllo<-pheno1$genotype[pheno1$score4<=0.5]
+rollno<-pheno1$genotype[pheno1$score4==0]
+
+###LOOK HERE###
+#this matches what I see on the dendrogram 
+coph<-as.matrix(cophenetic(hc_snp))
+coph1<-coph[,rollhi]
+coph2<-subset(coph1, rownames(coph1) %in% rolllo)
 
 
 
@@ -141,6 +168,15 @@ plot(dend, horiz =  TRUE)
 legend(legend = score4, fill = rainbow_hcl(3))
 
 #end save these for now
+
+
+
+
+
+
+
+
+
 
 
 

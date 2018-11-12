@@ -156,9 +156,32 @@ scoreVch<-ggplot(data=combineww1, aes(x=score, y=CH_dry))+
   geom_text(aes(x=2, y=810, label="y = 47.76x + 337.30"))+
   geom_text(aes(x=2, y=790, label="p-value = 0.002"))+
   geom_text(aes(x=2, y=770, label="r-squared = 0.04"))+
-  theme(panel.background = element_rect(fill = "white", colour = "black"))
+  theme_classic()
+  #theme(panel.background = element_rect(fill = "white", colour = "black"))
 scoreVch
 dev.off()
+
+coefs <- coef(lm(CH_dry ~ score, data = combineww1))
+scoreVch<-ggplot(combineww1, aes(score, CH_dry, group=score))+
+  geom_jitter(width=0.075, color=combineww1$sibling)+
+  geom_abline(intercept=coefs[1], slope=coefs[2], size=0.5)+
+  ylim(0,NA)+
+  ylab("DS culm height (mm)")+
+  xlab("")+
+  #geom_text(aes(x=2, y=810, label="y = 47.76x + 337.30"))+
+  #geom_text(aes(x=2, y=790, label="p-value = 0.002"))+
+  #geom_text(aes(x=2, y=770, label="r-squared = 0.04"))+
+  annotate("text",x=2,y=830,label="y = 47.76x + 337.30")+
+  annotate("text",x=2,y=790,label="p-value = 0.002")+
+  annotate("text",x=2,y=750,label="r-squared = 0.04")+
+  theme(panel.background = element_rect(fill = "white", colour = "black"),axis.ticks.x=element_blank(),axis.text.x=element_blank())
+  #theme_classic()+theme(axis.line.x=element_blank(),axis.ticks.x=element_blank(),axis.text.x=element_blank())
+scoreVch
+
+
+
+
+
 
 
 #score vs biomass
@@ -205,9 +228,10 @@ scoreVvm<-ggplot(data=combineww1, aes(factor(score), VM_dry))+
   #geom_boxplot()+
   geom_jitter(width=0.125, color=combineww1$sibling)+
   #stat_summary(fun.y=mean, color="blue", geom="point")+
-  geom_text(data=check, aes(label=round(VM_dry, 2), y=VM_dry), size=3)+
-  geom_text(data=number, aes(label=VM_dry, y=0), size=3)+
-  geom_text(data=grouping, aes(label=.group, x=factor(grouping$score), y=6), size=3)+
+  ylab("DS vegetative mass (g)")+xlab("leaf rolling score")+
+  #geom_text(data=check, aes(label=round(VM_dry, 2), y=VM_dry))+
+  #geom_text(data=number, aes(label=VM_dry, y=0))+
+  geom_text(data=grouping, aes(label=.group, x=factor(grouping$score), y=6))+
   theme(panel.background = element_rect(fill = "white", colour = "black"))
 scoreVvm
 dev.off()
@@ -256,42 +280,26 @@ sibling<-c("TB_0612",
            "TB_0480"
 )
 
-sibling0<-c("TB_0612",
-            "TB_0368",
+sibling<-c("TB_0612","TB_0551",
+            "TB_0368","TB_0125",
             "TB_0462",
-            "TB_0335",
-            "TB_0239",
-            "TB_0003",
-            "TB_0446",
-            "TB_0581",
+            "TB_0335","TB_0130","TB_0208","TB_0254","TB_0269",
+            "TB_0239","TB_0260",
+            "TB_0003","TB_0129",
+            "TB_0446","TB_0343",
+            "TB_0581","TB_0255",
             "TB_0436",
-            "TB_0433",
-            "TB_0386",
-            "TB_0382",
-            "TB_0095",
-            "TB_0508",
-            "TB_0476",
-            "TB_0509",
-            "TB_0037",
-            "TB_0460",
-            "TB_0125",
-            "TB_0420",
-            "TB_0269",
-            "TB_0129",
-            "TB_0206",
-            "TB_0343",
-            "TB_0255",
-            "TB_0205",
-            "TB_0015",
-            "TB_0496",
-            "TB_0050",
-            "TB_0486",
-            "TB_0477",
-            "TB_0054",
-            "TB_0513"
-)
+            "TB_0433","TB_0205",
+            "TB_0386","TB_0015",
+            "TB_0382","TB_0610",
+            "TB_0095","TB_0050",
+            "TB_0508","TB_0486",
+            "TB_0476","TB_0477",
+            "TB_0509","TB_0513",
+            "TB_0037","TB_0503")
+            
 
-combineww2<-subset(combineww1, genotype %in% sibling)
+combineww2<-subset(combineww, genotype %in% sibling)
 combineww1$sibling[combineww1$genotype %in% sibling]<-"black"
 combineww1$sibling[is.na(combineww1$sibling)]<-"grey"
 
@@ -306,50 +314,58 @@ ggplot(data=combineww1, aes(factor(score), CH_rel_diff))+
   #geom_boxplot()+
   geom_jitter(width=0.125, color=combineww1$sibling)+
   geom_hline(yintercept=0)+
-  theme(panel.background = element_rect(fill = "white", colour = "black")),
-ncol=2)
+  theme(panel.background = element_rect(fill = "white", colour = "black")),ncol=2)
 dev.off()
 
-ggplot(data=combineww1, aes(factor(score), VM_dry))+
-  #geom_boxplot()+
-  geom_jitter(width=0.125, color=combineww1$sibling)+
-  theme_classic()
-
-ggplot(data=combineww1, aes(score, CH_dry))+
-  #geom_boxplot()+
-  geom_point(color=combineww1$sibling)+
-  geom_smooth(method="lm", se=FALSE, color="black")+
-  theme_classic()
 
 
 
+#calculate size and mass differences between high and low rolling pairs/sets 
+combineww3<-combineww2[,c(1,122,115,19)]
+
+#re-arranged it by hand in excel to make matches 
+hilo<-read.csv("./data/clean_data/rollHiLoComparison.csv", header=T)
+hilo$hilo_VM<-hilo$roll_hi_VM-hilo$roll_lo_VM
+hilo$hilo_CH<-hilo$roll_hi_CH-hilo$roll_lo_CH
+
+#take the hi genotype average 
+hilo1<-ddply(hilo, c("roll_hi"), summarise, hiloVM=mean(hilo_VM), hiloCH=mean(hilo_CH), hilodist=mean(distance))
+
+
+#plot bars #note to self aes(x=reorder(roll_hi, hilodist))
+barVM<-ggplot(hilo1, aes(x=roll_hi, y=hiloVM))+
+  geom_bar(stat="identity", fill="grey")+
+  geom_hline(yintercept=0)+
+  #geom_text(aes(label=sprintf("%0.2f", round(hilodist, digits = 2)),vjust=ifelse(hiloVM>=0,-0.3,1.3)))+
+  xlab(expression("accessions with leaf roll score">=2))+ylab("")+
+  scale_y_continuous("vegetative mass difference (g)", position="right")+
+  theme_minimal()+theme(panel.grid.minor.y=element_blank(),
+                        panel.grid.minor.x=element_blank(),
+                        panel.grid.major.x=element_blank(),
+                        axis.text.x=element_text(angle=45,vjust = 1, hjust=1))
+barVM
+
+barCH<-ggplot(hilo1, aes(x=roll_hi, y=hiloCH))+
+  geom_bar(stat="identity", fill="grey")+
+  geom_hline(yintercept=0)+
+  labs(title="severe versus no-to-low rolling sibling comparison")+
+  #geom_text(aes(label=sprintf("%0.2f", round(hilodist, digits = 2)),y=-130), size=3.5, angle=45)+
+  xlab("")+ylab("")+
+  scale_y_continuous("culm height difference (mm)", position="right", limits=c(-150,300))+
+  theme_minimal()+theme(panel.grid.minor.y=element_blank(),
+                        panel.grid.minor.x=element_blank(),
+                        panel.grid.major.x=element_blank(),
+                        axis.text.x=element_blank())
+barCH
 
 
 
 
 
-
-
-
-
-
-
-
-ggplot(data=combinel, aes(x=data))+
-  geom_histogram()+
-  facet_wrap(~abb_type, scales="free")
-
-
-trythis<-subset(combinel, type==c("dry","wet","dw_diff"))
-
-
-ggplot(data=trythis, aes(x=data, color=type))+
-  geom_freqpoly()+
-  facet_wrap(~trait, scales="free")
-
-
-
-
+#put the size and mass stuff all together
+png("./results/lrsChVmSiblings.png",width=700, height=400)
+grid.arrange(scoreVch, barCH, scoreVvm, barVM, ncol=2)
+dev.off()
 
 
 
@@ -358,25 +374,15 @@ ggplot(data=trythis, aes(x=data, color=type))+
 #subplot_id's of interest 
 subset15<-unique(combo2$subplot_id)
 
-
-
-
-
-
-
 #correlations of population plant level traits 
 #is leaf rolling limited to any specific architectural or developmental "ideotype"? 
 #doesn't really look like it :( 
-
-
-
 
 #ideal model: leaf_rolling = genotype * water * time (where time is seasonal)
 #true model: leaf_rolling = genotype? 
 #^but does this really make any sense? only have leaf rolling score for dry plots 
 #two biological replicates for most traits 
 #have ~207 genotypes 
-
 
 #15 genotype subset leaf/canopy time and treatment dynamics aka interactions 
 
@@ -646,13 +652,26 @@ colnames(score151)[2]<-"data"
 rolling2<-rbind(rolling1, score151)
 
 rollLAI<-merge(rolling2, laiw1, by="genotype")
-
+#relate dry diurnal change to treatment response 
 rollLAIcorr<-ggplot(data=subset(rollLAI, trait %in% c("GSF","roll","score")), aes(x=data, y=dLAI_diff_trt))+
   geom_point()+
   geom_smooth(method="lm", se=FALSE, color="black")+
   facet_wrap(~trait, scales="free_x")+
   theme(panel.background = element_rect(fill = "white", colour = "black"))
 rollLAIcorr
+
+#relate wet diurnal change to treatment response 
+ggplot(data=subset(rollLAI, trait %in% c("LAI","roll","inclination")), aes(x=data, y=dLAI_diff_trt))+
+  geom_point()+
+  #geom_smooth(method="lm", se=FALSE, color="black")+
+  facet_wrap(~trait, scales="free_x")+
+  theme(panel.background = element_rect(fill = "white", colour = "black"))
+
+rollLAIwd<-merge(rolling, laiw1, by="genotype")
+
+
+
+
 
 #rolling + CT
 justroll<-subset(rolling, trait=="roll")
