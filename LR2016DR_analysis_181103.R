@@ -21,6 +21,9 @@ load("./data/clean_data/data_population_plant.Rdata")
 load("./data/clean_data/data_subset_CT.Rdata")
 
 
+save.image(file="tooMuch.Rdata")
+
+
 
 #analyze in order of population-plant/canopy-level to subset-leaf/canopy-level 
 #communicate in reverse order (subset-leaf/canopy to population-plant/canopy)
@@ -244,6 +247,7 @@ dev.off()
 
 
 #try the sibling thing 
+#closest zero
 sibling<-c("TB_0612",
            "TB_0368",
            "TB_0462",
@@ -279,7 +283,7 @@ sibling<-c("TB_0612",
            "TB_0534",
            "TB_0480"
 )
-
+#closest 0-05
 sibling<-c("TB_0612","TB_0551",
             "TB_0368","TB_0125",
             "TB_0462",
@@ -298,6 +302,10 @@ sibling<-c("TB_0612","TB_0551",
             "TB_0509","TB_0513",
             "TB_0037","TB_0503")
             
+#closest 0-0.5 with full data available 
+sibling<-c()
+
+
 
 combineww2<-subset(combineww, genotype %in% sibling)
 combineww1$sibling[combineww1$genotype %in% sibling]<-"black"
@@ -319,9 +327,18 @@ dev.off()
 
 
 
-
 #calculate size and mass differences between high and low rolling pairs/sets 
-combineww3<-combineww2[,c(1,122,115,19)]
+#pull out size and mass
+combineww3<-combineww1[,c("genotype","score","VM_dry","VM_wet","VM_dw_percent","CH_dry","CH_wet","CH_dw_percent")]
+#merge with potential lo-rollers 
+potLo<-merge(combineww3, coph3, by="genotype")
+#ditch those with missing data (NAs in CH or VM)
+newdf<-potLo[!rowSums(is.na(potLo))>0,]
+
+write.csv(newdf, file="./results/rollhilofull.csv")
+
+traitlook<-subset(combineww1, genotype %in% rollhi)
+traitlook<-traitlook[,c("genotype","score","VM_dry","VM_wet","VM_dw_percent","CH_dry","CH_wet","CH_dw_percent")]
 
 #re-arranged it by hand in excel to make matches 
 hilo<-read.csv("./data/clean_data/rollHiLoComparison.csv", header=T)
@@ -366,6 +383,155 @@ barCH
 png("./results/lrsChVmSiblings.png",width=700, height=400)
 grid.arrange(scoreVch, barCH, scoreVvm, barVM, ncol=2)
 dev.off()
+
+
+
+
+
+
+#trying this again with as little missing data as possible and with wet and difference data included
+hilo<-read.csv("./data/clean_data/rollHiLoComparison_noMissing.csv", header=T)
+#merge with phentypes data 
+#los
+los<-subset(combineww3, genotype %in% hilo$rolllo)
+colnames(los)<-c("rolllo","lo_score","lo_VM_dry","lo_VM_wet","lo_VM_dw_percent","lo_CH_dry","lo_CH_wet","lo_CH_dw_percent")
+#his 
+his<-subset(combineww3, genotype %in% hilo$rollhi)
+colnames(his)<-c("rollhi","hi_score","hi_VM_dry","hi_VM_wet","hi_VM_dw_percent","hi_CH_dry","hi_CH_wet","hi_CH_dw_percent")
+#merge
+hilo1<-merge(hilo, los, by="rolllo")
+hilo2<-merge(hilo1, his, by="rollhi")
+
+
+
+
+
+#make this long for easier manipulation 
+hilo2$hilo_VM_dry<-hilo2$hi_VM_dry-hilo2$lo_VM_dry
+hilo2$hilo_CH_dry<-hilo2$hi_CH_dry-hilo2$lo_CH_dry
+hilo2$hilo_VM_wet<-hilo2$hi_VM_wet-hilo2$lo_VM_wet
+hilo2$hilo_CH_wet<-hilo2$hi_CH_wet-hilo2$lo_CH_wet
+hilo2$hilo_VM_dif<-hilo2$hi_VM_dw_percent-hilo2$lo_VM_dw_percent
+hilo2$hilo_CH_dif<-hilo2$hi_CH_dw_percent-hilo2$lo_CH_dw_percent
+
+hilo3<-ddply(hilo2, c("rollhi"), summarise, 
+             hiloVMd=mean(hilo_VM_dry), 
+             hiloCHd=mean(hilo_CH_dry), 
+             hiloVMw=mean(hilo_VM_wet), 
+             hiloCHw=mean(hilo_CH_wet),
+             hiloVMr=mean(hilo_VM_dif), 
+             hiloCHr=mean(hilo_CH_dif),
+             hilodist=mean(distance))
+
+
+boxplot(hilo2$lo_VM_dry, hilo2$hi_VM_dry, names=c("lo","hi"), main="VM dry 0.06")
+boxplot(hilo2$lo_VM_wet, hilo2$hi_VM_wet, names=c("lo","hi"), main="VM wet 0.02")
+boxplot(hilo2$lo_VM_dw_percent, hilo2$hi_VM_dw_percent, names=c("lo","hi"), main="VM difference ns")
+
+t.test(hilo2$lo_VM_dry, hilo2$hi_VM_dry)
+t.test(hilo2$lo_VM_wet, hilo2$hi_VM_wet)
+t.test(hilo2$lo_VM_dw_percent, hilo2$hi_VM_dw_percent)
+
+
+boxplot(hilo2$lo_CH_dry, hilo2$hi_CH_dry, names=c("lo","hi"), main="CH dry 0.06")
+boxplot(hilo2$lo_CH_wet, hilo2$hi_CH_wet, names=c("lo","hi"), main="CH wet 0.0009")
+boxplot(hilo2$lo_CH_dw_percent, hilo2$hi_CH_dw_percent, names=c("lo","hi"), main="CH difference 0.0006")
+
+t.test(hilo2$lo_CH_dry, hilo2$hi_CH_dry)
+t.test(hilo2$lo_CH_wet, hilo2$hi_CH_wet)
+t.test(hilo2$lo_CH_dw_percent, hilo2$hi_CH_dw_percent)
+
+
+grid.arrange(
+  boxplot(hilo2$lo_VM_dry, hilo2$hi_VM_dry, names=c("lo","hi"), top="VM dry 0.06"),
+  boxplot(hilo2$lo_VM_wet, hilo2$hi_VM_wet, names=c("lo","hi"), top="VM wet 0.02"),
+  boxplot(hilo2$lo_VM_dw_percent, hilo2$hi_VM_dw_percent, names=c("lo","hi"), top="VM difference ns"),
+  
+  boxplot(hilo2$lo_CH_dry, hilo2$hi_CH_dry, names=c("lo","hi"), top="CH dry 0.06"),
+  boxplot(hilo2$lo_CH_wet, hilo2$hi_CH_wet, names=c("lo","hi"), top="CH wet 0.0009"),
+  boxplot(hilo2$lo_CH_dw_percent, hilo2$hi_CH_dw_percent, names=c("lo","hi"), top="CH difference 0.0006"),
+  ncol=2
+)
+
+
+
+
+barVM<-ggplot(hilo3, aes(x=rollhi, y=hiloVMd))+
+  geom_bar(stat="identity", fill="grey")+
+  geom_hline(yintercept=0)+
+  #geom_text(aes(label=sprintf("%0.2f", round(hilodist, digits = 2)),vjust=ifelse(hiloVM>=0,-0.3,1.3)))+
+  xlab(expression("accessions with leaf roll score">=2))+ylab("")+
+  scale_y_continuous("vegetative mass difference (g)", position="right")+
+  theme_minimal()+theme(panel.grid.minor.y=element_blank(),
+                        panel.grid.minor.x=element_blank(),
+                        panel.grid.major.x=element_blank(),
+                        axis.text.x=element_text(angle=45,vjust = 1, hjust=1))
+barVM
+
+barCH<-ggplot(hilo3, aes(x=rollhi, y=hiloCHd))+
+  geom_bar(stat="identity", fill="grey")+
+  geom_hline(yintercept=0)+
+  #geom_text(aes(label=sprintf("%0.2f", round(hilodist, digits = 2)),vjust=ifelse(hiloVM>=0,-0.3,1.3)))+
+  xlab("")+ylab("")+
+  scale_y_continuous("culm height difference (mm)", position="right")+
+  theme_minimal()+theme(panel.grid.minor.y=element_blank(),
+                        panel.grid.minor.x=element_blank(),
+                        panel.grid.major.x=element_blank(),
+                        axis.text.x=element_blank())
+barCH
+
+
+
+
+
+hilol<-melt(hilo3, id.vars=c("rollhi","hilodist"), measure.vars=c("hiloVMd","hiloCHd","hiloVMw","hiloCHw","hiloVMr","hiloCHr"), variable.name="name",value.name="data")
+
+hilol$treatment[hilol$name %in% c("hiloVMd","hiloCHd")]<-"dry"
+hilol$treatment[hilol$name %in% c("hiloVMw","hiloCHw")]<-"wet"
+hilol$treatment[hilol$name %in% c("hiloVMr","hiloCHr")]<-"response"
+hilol$trait[hilol$name %in% c("hiloVMd","hiloVMw","hiloVMr")]<-"VM"
+hilol$trait[hilol$name %in% c("hiloCHd","hiloCHw","hiloCHr")]<-"CH"
+
+
+
+
+ggplot(subset(hilol, treatment %in% c("dry")), aes(x=rollhi, y=data))+
+  geom_bar(stat="identity", position="dodge", fill="grey")+
+  geom_hline(yintercept=0)+
+  facet_wrap(~trait, scales="free")+
+  theme_minimal()+theme(panel.grid.minor.y=element_blank(),
+                       panel.grid.minor.x=element_blank(),
+                      panel.grid.major.x=element_blank(),
+                     axis.text.x=element_text(angle=45,vjust = 1, hjust=1))
+
+png("./results/lrsChVmSiblingsWD.png",width=700, height=400)
+ggplot(subset(hilol, treatment %in% c("dry","wet")), aes(x=rollhi, y=data, fill=treatment))+
+  geom_bar(stat="identity", position="dodge")+
+  geom_hline(yintercept=0)+
+  facet_wrap(~trait, scales="free")+
+  theme_minimal()+theme(panel.grid.minor.y=element_blank(),
+                        panel.grid.minor.x=element_blank(),
+                        panel.grid.major.x=element_blank(),
+                        axis.text.x=element_text(angle=45,vjust = 1, hjust=1))
+dev.off()
+  
+  
+  #geom_text(aes(label=sprintf("%0.2f", round(hilodist, digits = 2)),vjust=ifelse(hiloVM>=0,-0.3,1.3)))+
+  #xlab(expression("accessions with leaf roll score">=2))+ylab("")+
+  #scale_y_continuous("vegetative mass difference (g)", position="right")+
+  #theme_minimal()+theme(panel.grid.minor.y=element_blank(),
+   #                     panel.grid.minor.x=element_blank(),
+    #                    panel.grid.major.x=element_blank(),
+     #                   axis.text.x=element_text(angle=45,vjust = 1, hjust=1))
+
+
+
+
+
+
+
+
+
 
 
 
@@ -424,6 +590,10 @@ ggplot()+
   theme(legend.position="none")
 
 
+#remove the dry inclination outlier 
+#TB_0581
+combog$average[combog$treatment=="dry"&combog$trait=="inclination"&combog$genotype=="TB_0581"]<-NA
+
 
 
 ggplot()+
@@ -452,6 +622,15 @@ rxn_raw<-ggplot(data=subset(combog, trait %in% c("GSF","LAI","inclination","roll
   theme(legend.position="none", axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),axis.title.x=element_blank())
 rxn_raw
 dev.off()
+
+#t-tests of raw observations dawn vs midday within each treatment 
+
+#two factor anova
+do_aov<-aov(average~treatment+time+treatment:time, data=subset(combog, trait=="roll"))
+summary(do_aov)
+TukeyHSD(do_aov)
+
+
 
 
 
@@ -514,6 +693,7 @@ combow_time2$time_per[combow_time2$trait=="GSF" & combow_time2$time_per<0.75]<-N
 box_diff<-ggplot(data=combow_time2, aes(factor(treatment), time_per, fill=treatment))+
   geom_boxplot()+
   ylim(0,1.6)+
+  stat_summary(aes(treatment, time_per), fun.y=mean, color="black", geom="point", inherit.aes = FALSE)+
   facet_wrap(~trait, ncol=4)+
   theme(panel.background = element_rect(fill = "white", colour = "black"))+
   theme(legend.position="none",axis.title.x=element_blank())
@@ -524,6 +704,14 @@ grid.arrange(rxn_raw, box_diff)
 dev.off()
 
 #need to do a test to show the time differences are indeed different
+do_aov<-aov(time_per~treatment, data=subset(combow_time2, trait=="GSF"))
+summary(do_aov)
+
+t.test(time_per~treatment, data=subset(combow_time2, trait=="GSF"))
+
+
+
+
 
 
 #plot of differences 
@@ -567,8 +755,23 @@ ggpairs(comparew2, columns=c(9,3:8), lower=list(continuous="smooth"), aes(color=
 
 #dry and wet deltas for leaf and canopy traits 
 png(file="./results/delta_wd_corr.png", width=700, height=700)
-ggpairs(comparew2, columns=c(3:6), lower=list(continuous="smooth"), aes(color=treatment), se=FALSE)
+ggpairs(comparew2, columns=c(3:6), 
+        lower=list(continuous="smooth"), 
+        upper=list(continuous=wrap("cor")),
+        axisLabels="internal",
+        aes(color=treatment), se=FALSE)
 dev.off()
+
+#calculate corr values and pvalues 
+comparew2d<-subset(comparew2, treatment=="dry")
+cor.test(comparew2d$inclination, comparew2d$roll)
+
+comparew2w<-subset(comparew2, treatment=="wet")
+cor.test(comparew2w$inclination, comparew2w$roll)
+
+
+
+
 
 #delta rolling wet and dry with CT 
 png(file="./results/delta_wd_ct_corr.png")
@@ -660,6 +863,27 @@ rollLAIcorr<-ggplot(data=subset(rollLAI, trait %in% c("GSF","roll","score")), ae
   theme(panel.background = element_rect(fill = "white", colour = "black"))
 rollLAIcorr
 
+#regressions for dry diurnal change to treatment response 
+#embed these stats in figure 4
+fit<-lm(data=rollLAI, subset=(trait=="score"), dLAI_diff_trt~data)
+summary(fit)
+
+
+
+
+#relate wet diurnal change to wet productiivity 
+rollingw<-subset(rolling, treatment=="wet")
+laiww<-laiw[,c(1,3)]
+rollinglaiw<-merge(rollingw, laiww, by="genotype")
+png("./results/diurnalW_prodW.png")
+ggplot(rollinglaiw, aes(x=data, y=wet))+
+  geom_point()+
+  geom_smooth(method="lm")+
+  facet_wrap(~trait, scales="free_x")
+dev.off()
+fit<-lm(data=rollinglaiw, subset=(trait=="LAI"), wet~data)
+summary(fit)
+
 #relate wet diurnal change to treatment response 
 ggplot(data=subset(rollLAI, trait %in% c("LAI","roll","inclination")), aes(x=data, y=dLAI_diff_trt))+
   geom_point()+
@@ -669,7 +893,21 @@ ggplot(data=subset(rollLAI, trait %in% c("LAI","roll","inclination")), aes(x=dat
 
 rollLAIwd<-merge(rolling, laiw1, by="genotype")
 
+png("./results/rollWDvLAId.png", width=900, height=900)
+ggplot(data=subset(rollLAIwd, trait %in% c("GSF","LAI","roll","inclination")), aes(data, dLAI_diff_trt, group=treatment))+
+  geom_point(aes(color=treatment))+
+  geom_smooth(aes(color=treatment), method="lm", se=FALSE)+
+  facet_wrap(~trait, scales="free_x")
+dev.off()
 
+fit<-lm(formula=compare_wd$diff_wet_GSF~compare_wd$diff_dry_roll)
+summary(fit)
+
+rollLAIw<-subset(rollLAIwd, treatment=="dry")
+rollLAIw1<-subset(rollLAIw, trait=="roll")
+
+fit<-lm(formula=rollLAIw1$dLAI_diff_trt~rollLAIw1$data)
+summary(fit)
 
 
 
@@ -688,6 +926,12 @@ rollCTcorr<-ggplot(data=rollCT, aes(x=time_diff_roll, y=CT, color=treatment))+
   facet_wrap(~trait)+
   theme(panel.background = element_rect(fill = "white", colour = "black"), legend.position="none")
 rollCTcorr
+
+#CT v rolling correlations 
+fit<-lm(data=rollCT, subset=(trait=="CT40DAS"&treatment=="dry"), CT~time_diff_roll)
+summary(fit)
+
+
 
 png("./results/roll_CT_LAI.png", width=700, height=400)
 grid.arrange(rollLAIcorr, rollCTcorr)

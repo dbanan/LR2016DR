@@ -143,6 +143,8 @@ rollno<-pheno1$genotype[pheno1$score4==0]
 coph<-as.matrix(cophenetic(hc_snp))
 coph1<-coph[,rollhi]
 coph2<-subset(coph1, rownames(coph1) %in% rolllo)
+coph3<-as.data.frame(coph2)
+coph3$genotype<-rownames(coph3)
 
 
 
