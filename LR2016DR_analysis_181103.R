@@ -526,10 +526,18 @@ dev.off()
 
 
 
+###PULL OUT ROOT SAMPLES FOR SIBLINGS 
+#print out list of hi siblings and potential lo siblings to pull root samples for processing
+sibList<-read.csv("./data/clean_data/rollHiLoSiblingsList.csv", header=T)
 
+#infile experimental design
+design16dr<-read.csv("/rsync/box/Setaria/2016 Setaria/16DR_subplot_genotype_list_FINAL.csv",header=T, stringsAsFactors=F,na.strings=".")
+#format column names
+colnames(design16dr)<-c("subplot_id","rep","awning","treatment","genotype")
 
+sibList1<-merge(sibList, design16dr, by=c("genotype"))
 
-
+write.csv(sibList1, "./results/HiLoSiblings.csv")
 
 
 
@@ -764,7 +772,7 @@ dev.off()
 
 #calculate corr values and pvalues 
 comparew2d<-subset(comparew2, treatment=="dry")
-cor.test(comparew2d$inclination, comparew2d$roll)
+cor.test(comparew2d$GSF, comparew2d$roll)
 
 comparew2w<-subset(comparew2, treatment=="wet")
 cor.test(comparew2w$inclination, comparew2w$roll)
@@ -820,10 +828,15 @@ ggplot(data=compare_wd, aes(x=diff_dry_roll, y=diff_wet_inclination))+
 ncol=2)
 dev.off()
   
-
-
-
-
+png(file="./results/wetDryMismatch.png", width=300, height=270)
+ggplot(data=compare_wd, aes(x=diff_dry_roll, y=diff_wet_inclination))+
+  geom_point()+
+  geom_hline(yintercept=1)+
+  geom_vline(xintercept=1)+
+  xlab("DS roll angle midday:dawn")+
+  ylab("WW inclination angle midday:dawn")+
+  theme(panel.background = element_rect(fill = "white", colour = "black"))
+dev.off()
 
 
 #relate rolling time delta to canopy temperature and biomass treatment delta 
@@ -949,6 +962,18 @@ ggplot(data=rollingScore, aes(x=data, y=score))+
   facet_wrap(~trait, scales="free_x")
 dev.off()
 
+
+#correlation values for LRS vs adjustments
+fit<-lm(data=rollingScore, subset=(trait=="inclination"), score~data)
+summary(fit)
+
+
+
+#some outliers to remove from GSF and LAI...take these out of full dataset next times
+rollingScore<-merge(rolling1, score15, by="genotype")
+rollingScore<-rollingScore[!(rollingScore$data>1.40 & rollingScore$score==0 & rollingScore$trait=="GSF"),]
+rollingScore<-rollingScore[!(rollingScore$data<0.9 & rollingScore$score==0 & rollingScore$trait=="LAI"),]
+  
 
 
 
