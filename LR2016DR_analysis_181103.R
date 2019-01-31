@@ -7,7 +7,9 @@ library(reshape2)
 library(GGally)
 library(lsmeans)
 library(gridExtra)
+library(emmeans)
 
+install.packages("emmeans")
 
 save(combo, file="./data/clean_data/data_subset_LR.Rdata")
 save(visual_score1, file="./data/clean_data/data_population_score.Rdata")
