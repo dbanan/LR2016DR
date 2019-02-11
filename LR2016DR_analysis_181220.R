@@ -135,7 +135,7 @@ f1a<-ggplot(subset(combog1, trait=="roll"),
   ylim(0,NA)+
   #labs(title="leaf roll angle")+
   ylab(expression("leaf roll angle "(degree)))+
-  stat_summary(aes(interaction(time, trt_abb), average, label=round(..y..,0)), fun.y=mean, color="black", geom="text", inherit.aes = FALSE, size=3)+
+  #stat_summary(aes(interaction(time, trt_abb), average, label=round(..y..,0)), fun.y=mean, color="black", geom="text", inherit.aes = FALSE, size=3)+
   theme(panel.background = element_rect(fill = "white", colour = "black"))+
   theme(legend.position="none", 
         axis.text.x =element_text(angle = 45, vjust = 1, hjust=1),
@@ -154,7 +154,7 @@ f1b<-ggplot(subset(combog1, trait=="inclination"),
   ylim(0,NA)+
   #labs(title="leaf inclination angle")+
   ylab(expression("leaf inclination angle " (degree)))+
-  stat_summary(aes(interaction(time, trt_abb), average, label=round(..y..,0)), fun.y=mean, color="black", geom="text", inherit.aes = FALSE, size=3)+
+  #stat_summary(aes(interaction(time, trt_abb), average, label=round(..y..,0)), fun.y=mean, color="black", geom="text", inherit.aes = FALSE, size=3)+
   theme(panel.background = element_rect(fill = "white", colour = "black"))+
   theme(legend.position="none", 
         axis.text.x =element_text(angle = 45, vjust = 1, hjust=1),
@@ -173,7 +173,7 @@ f1c<-ggplot(subset(combog1, trait=="PAI"),
   ylim(0,NA)+
   #labs(title="PAI")+
   ylab(expression(paste("PAI ",(m^{2}/m^{2}))))+
-  stat_summary(aes(interaction(time, trt_abb), average, label=round(..y..,2)), fun.y=mean, color="black", geom="text", inherit.aes = FALSE, size=3)+
+  #stat_summary(aes(interaction(time, trt_abb), average, label=round(..y..,2)), fun.y=mean, color="black", geom="text", inherit.aes = FALSE, size=3)+
   theme(panel.background = element_rect(fill = "white", colour = "black"))+
   theme(legend.position="none", 
         axis.text.x =element_text(angle = 45, vjust = 1, hjust=1),
@@ -192,7 +192,7 @@ f1d<-ggplot(subset(combog1, trait=="CLP"),
   ylim(0,NA)+
   #labs(title="CLP")+
   ylab("CLP (proportion)")+
-  stat_summary(aes(interaction(time, trt_abb), average, label=round(..y..,2)), fun.y=mean, color="black", geom="text", inherit.aes = FALSE, size=3)+
+  #stat_summary(aes(interaction(time, trt_abb), average, label=round(..y..,2)), fun.y=mean, color="black", geom="text", inherit.aes = FALSE, size=3)+
   theme(panel.background = element_rect(fill = "white", colour = "black"))+
   theme(legend.position="none", 
         #plot.title=element_text(hjust=0),
@@ -329,32 +329,52 @@ ggpairs(comparew, columns=c(3:6),
 f2a<-ggplot(comparew, aes(x=roll, y=inclination, color=trt_abb))+
   geom_point(size=3)+
   scale_color_manual(values=c("grey", "black"))+
-  theme(legend.position="none")
+  theme(legend.position="none")+
+  theme(axis.ticks.length=unit(-0.25, "cm"), 
+        axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 f2b<-ggplot(comparew, aes(x=roll, y=CLP, color=trt_abb))+
   geom_point(size=3)+
   scale_color_manual(values=c("grey", "black"))+
-  theme(legend.position="none")
+  theme(legend.position="none")+
+  theme(axis.ticks.length=unit(-0.25, "cm"), 
+        axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 f2c<-ggplot(comparew, aes(x=roll, y=PAI, color=trt_abb))+
   geom_point(size=3)+
   scale_color_manual(values=c("grey", "black"))+
-  theme(legend.position="none")
+  theme(legend.position="none")+
+  theme(axis.ticks.length=unit(-0.25, "cm"), 
+        axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 f2d<-ggplot(comparew, aes(x=inclination, y=CLP, color=trt_abb))+
   geom_point(size=3)+
   scale_color_manual(values=c("grey", "black"))+
-  theme(legend.position="none")
+  theme(legend.position="none")+
+  theme(axis.ticks.length=unit(-0.25, "cm"), 
+        axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 f2e<-ggplot(comparew, aes(x=inclination, y=PAI, color=trt_abb))+
   geom_point(size=3)+
   scale_color_manual(values=c("grey", "black"))+
-  theme(legend.position="none")
+  theme(legend.position="none")+
+  theme(axis.ticks.length=unit(-0.25, "cm"), 
+        axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 f2f<-ggplot(comparew, aes(x=CLP, y=PAI, color=trt_abb))+
   geom_point(size=3)+
   scale_color_manual(values=c("grey", "black"))+
-  theme(legend.position="none")
+  theme(legend.position="none")+
+  theme(axis.ticks.length=unit(-0.25, "cm"), 
+        axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
+
 
 plot_grid(f2a, NULL, NULL, 
           f2b, f2d, NULL,
           f2c, f2e, f2f,
-          ncol=3)
+          ncol=3,
+          labels=c("A","","","B","C","","D","E","F"))
 
 ##############
 ###FIGURE 3###
@@ -423,8 +443,289 @@ plot_grid(f3a, f3b, f3c, ncol=3, labels=c("A","B","C"), align="h", rel_widths=c(
 ###FIGURE 4###
 ##############
 
+#format whole plant trait dataset 
+#select traits of interest 
+interest<-c("basal_width","branch_number","culm_height","tiller_height","tiller_number",
+            "per_plant_leaf_mass","per_plant_panicle_mass","per_plant_stem_mass","per_plant_vegetative_mass","per_plant_total_mass",
+            "reproductive_vegetative_ratio","panicle_emerge","leaf_number_total",
+            "height","tiller_count")
+allplant1<-subset(allplant, trait %in% interest)
+
+#trait abbreviations 
+abb<-c("BW","BN","CH","TH","TN","LM","PM","SM","VM","TM","RV","PE","LN","MH","MT")
+key<-cbind(interest, abb)
+colnames(key)<-c("trait","abb")
+allplant1<-merge(allplant1, key, by="trait")
+
+#genotype averages for plant and score 
+allplantg<-ddply(allplant1, c("genotype", "treatment", "trait", "abb"), summarise, average=mean(data))
+visualg<-ddply(visual_score, c("genotype"), summarise, score=mean(data))
+
+#make wide by treatment 
+allplantw<-dcast(allplantg, genotype+trait+abb~treatment, value.var="average")
+
+#calculate treatment differences 
+allplantw$dw_diff<-allplantw$dry-allplantw$wet
+allplantw$abs_diff<-abs(allplantw$dw_diff)
+allplantw$rel_diff<-allplantw$dw_diff/allplantw$wet
+allplantw$dw_percent<-allplantw$dry/allplantw$wet
+allplantw$log_percent<-log(allplantw$dw_percent)
+allplantw$mid_diff<-allplantw$dw_diff/((allplantw$dry+allplantw$wet)/2)
+
+#long by data type 
+allplantl<-melt(allplantw, id.vars=c("genotype","trait","abb"), measure.vars=c("dry","wet","dw_diff","abs_diff","rel_diff","dw_percent","log_percent","mid_diff"), variable.name="type",value.name="data")
+#trait_type combination 
+allplantl$abb_type<-paste(allplantl$abb, allplantl$type, sep="_")
+
+#go wide again by trait+type combination 
+allplantww<-dcast(allplantl, genotype~abb_type, value.var="data")
+
+#join with score data
+allplantww<-merge(allplantww, visualg, by=c("genotype"))
+
+#score vs height (can make a fit line), poor r-squared but the line is significantly non-zero
+allplantww1<-allplantww
+allplantww1$score[allplantww1$score==3]<-2.5
+
+sibling<-c("TB_0612","TB_0551",
+           "TB_0368","TB_0125",
+           "TB_0462",
+           "TB_0335","TB_0130","TB_0208","TB_0254","TB_0269",
+           "TB_0239","TB_0260",
+           "TB_0003","TB_0129",
+           "TB_0446","TB_0343",
+           "TB_0581","TB_0255",
+           "TB_0436",
+           "TB_0433","TB_0205",
+           "TB_0386","TB_0015",
+           "TB_0382","TB_0610",
+           "TB_0095","TB_0050",
+           "TB_0508","TB_0486",
+           "TB_0476","TB_0477",
+           "TB_0509","TB_0513",
+           "TB_0037","TB_0503")
+
+allplantww2<-subset(allplantww, genotype %in% sibling)
+allplantww1$sibling[allplantww1$genotype %in% sibling]<-"black"
+allplantww1$sibling[is.na(allplantww1$sibling)]<-"grey"
+
+#calculate size and mass differences between high and low rolling pairs/sets 
+#pull out size and mass
+allplantww3<-allplantww1[,c("genotype","score","VM_dry","VM_wet","VM_dw_percent","CH_dry","CH_wet","CH_dw_percent")]
+#merge CH and VM with CT40
+allplantww3<-merge(allplantww3, CT40w, by=c("genotype"))
+#merge with SD data (P1, raw)
+allplantww3<-merge(allplantww3, SDw, by=c("genotype"))
+
+#merge with potential lo-rollers 
+potLo<-merge(allplantww3, coph3, by="genotype")
+#ditch those with missing data (NAs in CH or VM)
+newdf<-potLo[!rowSums(is.na(potLo))>0,]
+
+
+#trying this again with as little missing data as possible and with wet and difference data included
+hilo<-read.csv("./data/clean_data/rollHiLoComparison_noMissing.csv", header=T)
+#merge with phentypes data 
+#los
+los<-subset(allplantww3, genotype %in% hilo$rolllo)
+colnames(los)<-c("rolllo","lo_score","lo_VM_dry","lo_VM_wet","lo_VM_dw_percent","lo_CH_dry","lo_CH_wet","lo_CH_dw_percent","lo_CT_dry","lo_CT_wet","lo_CT_dw_percent","lo_SD_dry","lo_SD_wet","lo_SD_dw_percent")
+#his 
+his<-subset(allplantww3, genotype %in% hilo$rollhi)
+colnames(his)<-c("rollhi","hi_score","hi_VM_dry","hi_VM_wet","hi_VM_dw_percent","hi_CH_dry","hi_CH_wet","hi_CH_dw_percent","hi_CT_dry","hi_CT_wet","hi_CT_dw_percent","hi_SD_dry","hi_SD_wet","hi_SD_dw_percent")
+#merge
+hilo1<-merge(hilo, los, by="rolllo")
+hilo2<-merge(hilo1, his, by="rollhi")
+
+#calculate sibling pair differences 
+hilo2$hilo_VM_dry<-hilo2$hi_VM_dry-hilo2$lo_VM_dry
+hilo2$hilo_CH_dry<-hilo2$hi_CH_dry-hilo2$lo_CH_dry
+hilo2$hilo_CT_dry<-hilo2$hi_CT_dry-hilo2$lo_CT_dry
+hilo2$hilo_SD_dry<-hilo2$hi_SD_dry-hilo2$lo_SD_dry
+
+hilo2$hilo_VM_wet<-hilo2$hi_VM_wet-hilo2$lo_VM_wet
+hilo2$hilo_CH_wet<-hilo2$hi_CH_wet-hilo2$lo_CH_wet
+hilo2$hilo_CT_wet<-hilo2$hi_CT_wet-hilo2$lo_CT_wet
+hilo2$hilo_SD_wet<-hilo2$hi_SD_wet-hilo2$lo_SD_wet
+
+hilo2$hilo_VM_dif<-hilo2$hi_VM_dw_percent-hilo2$lo_VM_dw_percent
+hilo2$hilo_CH_dif<-hilo2$hi_CH_dw_percent-hilo2$lo_CH_dw_percent
+hilo2$hilo_CT_dif<-hilo2$hi_CT_dw_percent-hilo2$lo_CT_dw_percent
+hilo2$hilo_SD_dif<-hilo2$hi_SD_dw_percent-hilo2$lo_SD_dw_percent
+
+
+#average out to take care of hi rollers with multiple close siblings 
+hilo3<-ddply(hilo2, c("rollhi"), summarise, 
+             hiloVMd=mean(hilo_VM_dry), 
+             hiloCHd=mean(hilo_CH_dry),
+             hiloCTd=mean(hilo_CT_dry),
+             hiloSDd=mean(hilo_SD_dry),
+             hiloVMw=mean(hilo_VM_wet), 
+             hiloCHw=mean(hilo_CH_wet),
+             hiloCTw=mean(hilo_CT_wet),
+             hiloSDw=mean(hilo_SD_wet),
+             hiloVMr=mean(hilo_VM_dif), 
+             hiloCHr=mean(hilo_CH_dif),
+             hiloCTr=mean(hilo_CT_dif),
+             hiloSDr=mean(hilo_SD_dif),
+             hilodist=mean(distance))
+
+t.test(hilo2$lo_SD_dry, hilo2$hi_SD_dry)
+
+boxplot(hilo2$lo_SD_dry, hilo2$hi_SD_dry, names=c("lo","hi"), main="SD dry")
+
+ggplot(hilo3, aes(x=rollhi, y=hiloVMd))+
+  geom_bar(stat="identity", fill="grey")+
+  geom_hline(yintercept=0)+
+  #geom_text(aes(label=sprintf("%0.2f", round(hilodist, digits = 2)),vjust=ifelse(hiloVM>=0,-0.3,1.3)))+
+  xlab(expression("accessions with leaf roll score">=2))+ylab("")+
+  #scale_y_continuous("canopy temperature difference (C)", position="right")+
+  theme_minimal()+theme(panel.grid.minor.y=element_blank(),
+                        panel.grid.minor.x=element_blank(),
+                        panel.grid.major.x=element_blank(),
+                        axis.text.x=element_text(angle=45,vjust = 1, hjust=1))
+
+
+
+
+ggplot(data=allplantww1, aes(x=score, y=CH_dry))+geom_point()+geom_smooth(method="lm")
+
+fit<-lm(formula=allplantww1$CH_dry~allplantww1$score)
+summary(fit)
+
+coefs <- coef(lm(CH_dry ~ score, data = allplantww1))
+
+
+
+
+
+
+modelLRS_CH = lm(CH_dry ~ factor(score),
+                 data=allplantww1)
+
+leastsquareLRS_CH = lsmeans(modelLRS_CH,
+                            pairwise ~ factor(score),
+                            adjust = "tukey")
+
+groupingLRS_CH<-cld(leastsquareLRS_CH,
+                    alpha   = 0.05,
+                    Letters = letters,
+                    adjust="tukey")
+
+
+ggplot(allplantww1, aes(score, CH_dry, group=score))+
+  geom_jitter(width=0.075, color=allplantww1$sibling)+
+  #geom_abline(intercept=coefs[1], slope=coefs[2], size=0.5)+
+  ylim(0,NA)+
+  ylab("DS culm height (mm)")+
+  xlab("")+
+  #geom_text(aes(x=2, y=810, label="y = 47.76x + 337.30"))+
+  #geom_text(aes(x=2, y=790, label="p-value = 0.002"))+
+  #geom_text(aes(x=2, y=770, label="r-squared = 0.04"))+
+  annotate("text",x=2,y=830,label="y = 47.76x + 337.30")+
+  annotate("text",x=2,y=790,label="p-value = 0.002")+
+  annotate("text",x=2,y=750,label="r-squared = 0.04")+
+  theme(panel.background = element_rect(fill = "white", colour = "black"),axis.ticks.x=element_blank(),axis.text.x=element_blank())
+#theme_classic()+theme(axis.line.x=element_blank(),axis.ticks.x=element_blank(),axis.text.x=element_blank())
+
+
+
+
+
+modelLRS_VM = lm(VM_dry ~ factor(score),
+           data=allplantww1)
+
+leastsquareLRS_VM = lsmeans(modelLRS_VM,
+                      pairwise ~ factor(score),
+                      adjust = "tukey")
+
+groupingLRS_VM<-cld(leastsquareLRS_VM,
+              alpha   = 0.05,
+              Letters = letters,
+              adjust="tukey")
+
+ggplot(data=allplantww1, aes(factor(score), VM_dry))+
+  #geom_boxplot()+
+  geom_jitter(width=0.125, color=allplantww1$sibling)+
+  #stat_summary(fun.y=mean, color="blue", geom="point")+
+  ylab("DS vegetative mass (g)")+xlab("leaf rolling score")+
+  #geom_text(data=check, aes(label=round(VM_dry, 2), y=VM_dry))+
+  #geom_text(data=number, aes(label=VM_dry, y=0))+
+  geom_text(data=groupingLRS_VM, aes(label=.group, x=factor(groupingLRS_VM$score), y=6))+
+  theme(panel.background = element_rect(fill = "white", colour = "black"))+
+  theme(axis.ticks.length=unit(-0.25, "cm"), 
+        axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
+
+
+
+
+
+
 #relate productivity to score 
 #compare siblings 
+
+
+
+
+##############
+###FIGURE 5###
+##############
+
+#join score and canopy temperature 
+LRS_CT<-merge(CTfullg, visualg, by=c("genotype"))
+
+LRS_CT<-subset(LRS_CT, trait=="CT40DAS")
+
+LRS_CT$sibling[LRS_CT$genotype %in% sibling]<-"black"
+LRS_CT$sibling[is.na(LRS_CT$sibling)]<-"grey"
+
+LRS_CT$score[LRS_CT$score==3]<-2.5
+
+ggplot(LRS_CT, aes(x=factor(score), y=average))+
+  geom_jitter(width=0.125, color=LRS_CT$sibling)
+  
+
+#do canopy temperature wide by treatment and calculate a difference and then merge with the sibling hi lo comparison 
+CT40<-subset(CTfullg, trait=="CT40DAS")
+CT40w<-dcast(CT40, genotype~treatment, value.var="average")
+colnames(CT40w)<-c("genotype","CT40_dry","CT40_wet")
+  
+CT40w$CT40_dw_percent<-CT40w$CT40_dry/CT40w$CT40_wet
+
+
+
+##############
+###FIGURE 6###
+##############
+
+#compare LRS and SD 
+LRS_SD<-merge(SDg, visualg, by="genotype")
+
+LRS_SD$score[LRS_SD$score==3]<-2.5
+
+ggplot(LRS_SD, aes(x=factor(score), y=average))+
+  geom_jitter(width=0.125)
+
+LRS_SD1<-subset(LRS_SD, treatment=="dry")
+LRS_SD1<-subset(LRS_SD1, collection=="P1")
+LRS_SD1<-subset(LRS_SD1, trait=="SDraw")
+
+LRS_SD1$sibling[LRS_SD1$genotype %in% sibling]<-"black"
+LRS_SD1$sibling[is.na(LRS_SD1$sibling)]<-"grey"
+
+ggplot(LRS_SD1, aes(x=factor(score), y=average))+
+  geom_jitter(width=0.125, color=LRS_SD1$sibling)
+
+#stomatal density wide by treatment and calculate difference to merge with other traits for sibling comparison 
+SDg1<-subset(SDg, collection=="P1")
+SDg1<-subset(SDg1, trait=="SDraw")
+
+SDw<-dcast(SDg1, genotype~treatment, value.var="average")
+colnames(SDw)<-c("genotype","SD_dry","SD_wet")
+SDw$SD_dw_percent<-SDw$SD_dry/SDw$SD_wet
+
+
+
 
 ###################
 ###SUPPLEMENTALS###
@@ -434,7 +735,29 @@ plot_grid(f3a, f3b, f3c, ncol=3, labels=c("A","B","C"), align="h", rel_widths=c(
 
 #S2 score correlation with diurnal rolling 
 
+s2a<-ggplot(subset(dPAI_roll, trt_abb=="WD"), aes(x=roll, y=LRS))+
+  geom_point()+geom_smooth(method="lm", se=FALSE, color="black")+
+  theme(axis.ticks.length=unit(-0.25, "cm"), 
+        axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
+s2b<-ggplot(subset(dPAI_roll, trt_abb=="WD"), aes(x=inclination, y=LRS))+
+  geom_point()+geom_smooth(method="lm", se=FALSE, color="black")+
+  theme(axis.ticks.length=unit(-0.25, "cm"), 
+        axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
+s2c<-ggplot(subset(dPAI_roll, trt_abb=="WD"), aes(x=CLP, y=LRS))+
+  geom_point()+geom_smooth(method="lm", se=FALSE, color="black")+
+  theme(axis.ticks.length=unit(-0.25, "cm"), 
+        axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
+s2d<-ggplot(subset(dPAI_roll, trt_abb=="WD"), aes(x=PAI, y=LRS))+
+  geom_point()+geom_smooth(method="lm", se=FALSE, color="black")+
+  theme(axis.ticks.length=unit(-0.25, "cm"), 
+        axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 
+
+plot_grid(s2a, s2b, s2c, s2d, labels=c("A","B","C","D"))
 
 
 #S3 lack of correlation between wet and dry diurnal rolling? 

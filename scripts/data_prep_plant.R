@@ -63,24 +63,24 @@ colnames(clean1)[6]<-"data"
 
 #####COMBINE#####
 #combine all population level datasets 
-combine<-rbind(harvest_traits1, harvest_weights, panicle_emergence, clean1)
+allplant<-rbind(harvest_traits1, harvest_weights, panicle_emergence, clean1)
 
 #remove B100, BLANK, and TB_0430? 
-combine<-combine[!combine$genotype=="B100",]
-combine<-combine[!combine$genotype=="BLANK",]
-combine<-combine[!combine$genotype=="TB_0430",]
+allplant<-allplant[!allplant$genotype=="B100",]
+allplant<-allplant[!allplant$genotype=="BLANK",]
+allplant<-allplant[!allplant$genotype=="TB_0430",]
 
 #remove extra panicle emergence data (stick with orignal)
-combine<-combine[!(combine$trait=="panicle_emerge_DAS"),]
+allplant<-allplant[!(allplant$trait=="panicle_emerge_DAS"),]
 
 
 #simple boxplots of all 
-ggplot()+geom_boxplot(data=combine, aes(factor(treatment), data, fill=factor(treatment)))+facet_wrap(~trait, scale="free")
+ggplot()+geom_boxplot(data=allplant, aes(factor(treatment), data, fill=factor(treatment)))+facet_wrap(~trait, scale="free")
 
 
 
 #ouput subplot level plant data 
-save(combine, file="./data/clean_data/data_population_plant.Rdata")
+save(allplant, file="./data/clean_data/data_population_plant.Rdata")
 
 
 

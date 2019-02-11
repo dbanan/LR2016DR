@@ -31,3 +31,52 @@ save(CT16dr1, file="./data/clean_data/data_subset_CT.Rdata")
 
 
 
+
+
+###Full pop### 
+#do this again but on whole population data and relate to score
+CTfull<-read.csv("./data/raw_data/16DR_canopyTemp_fullPop.csv", header=T, stringsAsFactors=F, na.strings=".")
+
+#trim and rename columns 
+CTfull<-CTfull[,c(1,4,5,7,8)]
+colnames(CTfull)<-c("subplot_id","treatment","genotype","CT40DAS","CT30DAS")
+
+#long by trait 
+CTfulll<-melt(CTfull, id.vars=c("subplot_id","treatment","genotype"), measure.vars=c("CT40DAS","CT30DAS"), variable.name="trait", value.name="data")
+
+#remove extreme temperature points 
+CTfulll$data[CTfulll$data>41]<-NA
+
+#calculate genotype average canopy temperature 
+CTfullg<-ddply(CTfulll, c("genotype","treatment","trait"), summarise, average=mean(data,na.rm=TRUE))
+
+
+
+######################
+###STOMATAL DENSITY###
+######################
+
+SDfull<-read.csv("./data/raw_data/Setaria_stomata_2016_GWAS_phenotype.csv", header=T, stringsAsFactors=F, na.strings=".")
+
+#P1 is July 14-20
+#P2 is July 26 and 27 
+
+SDfull<-SDfull[,c(1,4,5,7,8,9)]
+colnames(SDfull)<-c("subplot_id","treatment","genotype","SDraw","collection","SDpred")
+
+#hist() doesn't show major outliers. raw has a more normal distribution than pred 
+
+#make raw and pred long as trait 
+SDfulll<-melt(SDfull, id.vars=c("subplot_id","treatment","genotype","collection"), measure.vars=c("SDraw","SDpred"), variable.name="trait", value.name="data")
+
+#take genotype*treatment*collection averages 
+SDg<-ddply(SDfulll, c("genotype","treatment","collection","trait"), summarise, average=mean(data, na.rm=TRUE))
+
+
+
+
+
+
+
+
+
