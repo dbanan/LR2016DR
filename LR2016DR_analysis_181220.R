@@ -22,6 +22,8 @@ library(GGally)
 library(lsmeans)
 library(gridExtra)
 library(cowplot)
+library(emmeans)
+
 
 #tick marks in found here
 #https://stackoverflow.com/questions/26367296/how-do-i-make-my-axis-ticks-face-inwards-in-ggplot2
@@ -121,7 +123,6 @@ ggplot(transform(combog1, trait=factor(trait, levels=c("roll","inclination","PAI
   facet_wrap(~trait, scale="free", ncol=4)+
   theme(panel.background = element_rect(fill = "white", colour = "black"))+
   theme(legend.position="none", axis.text.x =element_text(angle = 45, vjust = 1, hjust=1),axis.title.x=element_blank())
-
 
 
 
@@ -324,25 +325,45 @@ ggpairs(comparew, columns=c(3:6),
 
 #need a way to plot this in an aesthetic way
 #try each pair one by one and then grid them out in a 3x3 with blanks? 
+coefs_f2b <- coef(lm(CLP ~ roll, data = subset(comparew, trt_abb=="WD")))
+coefs_f2c <- coef(lm(PAI ~ roll, data = subset(comparew, trt_abb=="WD")))
+
+#coefs_f2fww <- coef(lm(PAI ~ CLP, data = subset(comparew, trt_abb=="WW")))
+#coefs_f2fwd <- coef(lm(PAI ~ CLP, data = subset(comparew, trt_abb=="WD")))
+
+coefs_f2f <- coef(lm(PAI ~ CLP, data = comparew))
+cor.test(comparew$PAI, comparew$CLP)
 
 
 f2a<-ggplot(comparew, aes(x=roll, y=inclination, color=trt_abb))+
   geom_point(size=3)+
   scale_color_manual(values=c("grey", "black"))+
+  xlim(0.3, 1.5)+ylim(0.3, 1.5)+
+  xlab("leaf roll angle (midday/dawn)")+ylab("leaf inclination angle (midday/dawn)")+
   theme(legend.position="none")+
   theme(axis.ticks.length=unit(-0.25, "cm"), 
         axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
         axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 f2b<-ggplot(comparew, aes(x=roll, y=CLP, color=trt_abb))+
   geom_point(size=3)+
+  geom_abline(intercept=coefs_f2b[1], slope=coefs_f2b[2], size=0.5)+
+  annotate("text",x=0.8,y=0.63,label="y = -0.48x + 1.44 *", size=5)+
+  annotate("text",x=0.8,y=0.57,label="r = -0.55", size=5)+
   scale_color_manual(values=c("grey", "black"))+
+  xlim(0.3, 1.5)+ylim(0.3, 1.5)+
+  xlab("leaf roll angle (midday/dawn)")+ylab("CLP (midday/dawn)")+
   theme(legend.position="none")+
   theme(axis.ticks.length=unit(-0.25, "cm"), 
         axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
         axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 f2c<-ggplot(comparew, aes(x=roll, y=PAI, color=trt_abb))+
   geom_point(size=3)+
+  geom_abline(intercept=coefs_f2c[1], slope=coefs_f2c[2], size=0.5)+
+  annotate("text",x=0.8,y=0.63,label="y = 0.21x + 0.81 *", size=5)+
+  annotate("text",x=0.8,y=0.57,label="r = 0.52", size=5)+
   scale_color_manual(values=c("grey", "black"))+
+  xlim(0.3, 1.5)+ylim(0.3, 1.5)+
+  xlab("leaf roll angle (midday/dawn)")+ylab("PAI (midday/dawn)")+
   theme(legend.position="none")+
   theme(axis.ticks.length=unit(-0.25, "cm"), 
         axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
@@ -350,6 +371,8 @@ f2c<-ggplot(comparew, aes(x=roll, y=PAI, color=trt_abb))+
 f2d<-ggplot(comparew, aes(x=inclination, y=CLP, color=trt_abb))+
   geom_point(size=3)+
   scale_color_manual(values=c("grey", "black"))+
+  xlim(0.3, 1.5)+ylim(0.3, 1.5)+
+  xlab("leaf inclination angle (midday/dawn)")+ylab("CLP (midday/dawn)")+
   theme(legend.position="none")+
   theme(axis.ticks.length=unit(-0.25, "cm"), 
         axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
@@ -357,17 +380,31 @@ f2d<-ggplot(comparew, aes(x=inclination, y=CLP, color=trt_abb))+
 f2e<-ggplot(comparew, aes(x=inclination, y=PAI, color=trt_abb))+
   geom_point(size=3)+
   scale_color_manual(values=c("grey", "black"))+
+  xlim(0.3, 1.5)+ylim(0.3, 1.5)+
+  xlab("leaf inclination angle (midday/dawn)")+ylab("PAI (midday/dawn)")+
   theme(legend.position="none")+
   theme(axis.ticks.length=unit(-0.25, "cm"), 
         axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
         axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 f2f<-ggplot(comparew, aes(x=CLP, y=PAI, color=trt_abb))+
   geom_point(size=3)+
+  #geom_abline(intercept=coefs_f2fww[1], slope=coefs_f2fww[2], size=0.5, color="grey")+
+  #annotate("text",x=1,y=1.35,label="y = -1.04x + 2.05 **")+
+  #annotate("text",x=1,y=1.25,label="r = -0.71")+
+  #geom_abline(intercept=coefs_f2fwd[1], slope=coefs_f2fwd[2], size=0.5)+
+  #annotate("text",x=1,y=1.35,label="y = -0.36x + 1.35 ***")+
+  #annotate("text",x=1,y=1.25,label="r = -0.80")+
+  geom_abline(intercept=coefs_f2f[1], slope=coefs_f2f[2], size=0.5, linetype=2)+
+  annotate("text",x=0.8,y=0.63,label="y = -0.49x + 1.52 ***", size=5)+
+  annotate("text",x=0.8,y=0.57,label="r = -0.78", size=5)+
   scale_color_manual(values=c("grey", "black"))+
+  xlim(0.3, 1.5)+ylim(0.3, 1.5)+
+  xlab("CLP (midday/dawn)")+ylab("PAI (midday/dawn)")+
   theme(legend.position="none")+
   theme(axis.ticks.length=unit(-0.25, "cm"), 
         axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
         axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
+
 
 
 plot_grid(f2a, NULL, NULL, 
@@ -375,6 +412,36 @@ plot_grid(f2a, NULL, NULL,
           f2c, f2e, f2f,
           ncol=3,
           labels=c("A","","","B","C","","D","E","F"))
+
+plot_grid(f2a, f2f,
+          f2b, f2d, 
+          f2c, f2e, 
+          ncol=2, 
+          labels=c("A","B","C","D","E","F"))
+
+png(file="./results/f2rev.png", width=660, height=990)
+plot_grid(f2a, f2f,
+          f2b, f2d,
+          f2c, f2e, 
+          ncol=2, 
+          labels=c("A","B","C","D","E","F"))
+dev.off()
+
+
+
+
+#calculate corr values and pvalues and coefficients, input to supplemental table (by hand:|) 
+
+compareww<-subset(comparew, trt_abb=="WW")
+cor.test(compareww$PAI, compareww$CLP)
+
+coef(lm(PAI ~ CLP, data = subset(comparew, trt_abb=="WW")))
+
+comparewd<-subset(comparew, trt_abb=="WD")
+cor.test(comparewd$PAI, comparewd$CLP)
+
+coef(lm(PAI ~ CLP, data = subset(comparew, trt_abb=="WD")))
+
 
 ##############
 ###FIGURE 3###
@@ -402,42 +469,61 @@ colnames(dawnPAIw)[2]<-"dPAI_trt_per"
 dPAI_roll<-merge(dawnPAIw, comparew, by="genotype")
 dPAI_roll<-merge(dPAI_roll, score15, by="genotype")
 
-f3a<-ggplot(data=subset(dPAI_roll, trt_abb=="WD"), aes(x=roll, y=dPAI_trt_per))+
+dPAI_rollwd<-subset(dPAI_roll, trt_abb=="WD")
+
+f3a<-ggplot(dPAI_rollwd, aes(x=roll, y=dPAI_trt_per))+
   geom_point()+
-  geom_smooth(method="lm", se=FALSE, color="black")+
+  geom_abline(intercept=coefs_f3a[1], slope=coefs_f3a[2], size=0.5)+
+  annotate("text",x=0.87,y=1.05,label="y = -0.35x + 1.21", size=5)+
+  annotate("text",x=0.87,y=1.02,label=expression(paste(r^{2},"=0.45 **")), size=5)+
   ylab("dawn PAI (WD/WW)")+
   xlab("WD leaf roll angle (midday/dawn)")+
   theme(axis.ticks.length=unit(-0.25, "cm"), 
         axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
         axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 
-f3b<-ggplot(data=subset(dPAI_roll, trt_abb=="WD"), aes(x=CLP, y=dPAI_trt_per))+
+f3b<-ggplot(dPAI_rollwd, aes(x=CLP, y=dPAI_trt_per))+
   geom_point()+
-  geom_smooth(method="lm", se=FALSE, color="black")+
+  geom_abline(intercept=coefs_f3b[1], slope=coefs_f3b[2], size=0.5)+
+  annotate("text",x=1.35,y=0.8,label="y = 0.08x + 0.81", size=5)+
+  annotate("text",x=1.35,y=0.77,label=expression(paste(r^{2},"=0.27 *")), size=5)+
   ylab("dawn PAI (WD/WW)")+
   xlab("WD CLP (midday/dawn)")+
   theme(axis.ticks.length=unit(-0.25, "cm"), 
         axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
-        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )+
-  theme(axis.title.y=element_blank(),
-        axis.text.y=element_blank())
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )#+
+  #theme(axis.title.y=element_blank(),
+  #      axis.text.y=element_blank())
         
 
 f3c<-ggplot(data=subset(dPAI_roll, trt_abb=="WD"), aes(x=LRS, y=dPAI_trt_per))+
   geom_point()+
-  geom_smooth(method="lm", se=FALSE, color="black")+
+  geom_abline(intercept=coefs_f3c[1], slope=coefs_f3c[2], size=0.5)+
+  annotate("text",x=1,y=1.05,label="y = 0.08x + 0.81", size=5)+
+  annotate("text",x=1,y=1.02,label=expression(paste(r^{2},"=0.48 **")), size=5)+
   ylab("dawn PAI (WD/WW)")+
-  xlab("LRS")+
+  xlab("leaf rolling score")+
   theme(axis.ticks.length=unit(-0.25, "cm"), 
         axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
-        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )+
-  theme(axis.title.y=element_blank(),
-        axis.text.y=element_blank())
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )#+
+  #theme(axis.title.y=element_blank(),
+  #      axis.text.y=element_blank())
         
 
-plot_grid(f3a, f3b, f3c, ncol=3, labels=c("A","B","C"), align="h", rel_widths=c(1.2,1,1))
+coefs_f3a<-coef(lm(dPAI_trt_per~roll, data=dPAI_rollwd))
+cor.test(dPAI_rollwd$dPAI_trt_per, dPAI_rollwd$roll)
 
+coefs_f3b<-coef(lm(dPAI_trt_per~CLP, data=dPAI_roll))
+cor.test(dPAI_rollwd$dPAI_trt_per, dPAI_rollwd$CLP)
 
+coefs_f3c<-coef(lm(dPAI_trt_per~LRS, data=dPAI_roll))
+cor.test(dPAI_rollwd$dPAI_trt_per, dPAI_rollwd$LRS)
+
+plot_grid(f3a, f3b, f3c, ncol=3, labels=c("A","B","C"))
+
+png(file="./results/f3rev.png", width=900, height=500)
+plot_grid(f3a, f3b, f3c, ncol=3, labels=c("A","B","C"))
+dev.off()
 
 ##############
 ###FIGURE 4###
@@ -522,16 +608,58 @@ potLo<-merge(allplantww3, coph3, by="genotype")
 #ditch those with missing data (NAs in CH or VM)
 newdf<-potLo[!rowSums(is.na(potLo))>0,]
 
+###keep an eye on this, maybe later try just VM?###
+
+
+
+
+#special graph plant size versus leaf hydraulic conductance
+
+hilo_pair<-hilo
+colnames(hilo_pair)<-c("hi","lo","distance")
+hilo_pair$pair<-paste(hilo_pair$hi, hilo_pair$lo, sep="_")
+hilo_pairl<-melt(hilo_pair, id.vars=c("distance", "pair"), measure.vars=c("hi","lo"), variable.name="roll", value.name="genotype")
+
+pheno_pair<-merge(hilo_pairl, allplantww3, by="genotype")
+
+ggplot(pheno_pair, aes(x=SD_dry, y=VM_dry))+
+  geom_point(size=5, aes(color=roll))
+
+cor.test(pheno_pair$VM_dry, pheno_pair$SD_dry)
+
+pheno_pairhi<-subset(pheno_pair, roll=="hi")
+cor.test(pheno_pairhi$VM_dry, pheno_pairhi$SD_dry)
+
+pheno_pairlo<-subset(pheno_pair, roll=="lo")
+cor.test(pheno_pairlo$VM_dry, pheno_pairlo$SD_dry)
+
+
+
+ggplot(allplantww3, aes(x=SD_dry, y=VM_dry))+
+  geom_point()+
+  geom_smooth(method="lm")
+
+
+
+
+png(file="./results/SD_VM.png")
+ggplot(pheno_pair, aes(x=SD_dry, y=VM_dry))+
+  geom_point(size=5, aes(color=roll))
+dev.off()
+
+
 
 #trying this again with as little missing data as possible and with wet and difference data included
 hilo<-read.csv("./data/clean_data/rollHiLoComparison_noMissing.csv", header=T)
 #merge with phentypes data 
 #los
 los<-subset(allplantww3, genotype %in% hilo$rolllo)
-colnames(los)<-c("rolllo","lo_score","lo_VM_dry","lo_VM_wet","lo_VM_dw_percent","lo_CH_dry","lo_CH_wet","lo_CH_dw_percent","lo_CT_dry","lo_CT_wet","lo_CT_dw_percent","lo_SD_dry","lo_SD_wet","lo_SD_dw_percent")
+colnames(los)<-c("rolllo","lo_score","lo_VM_dry","lo_VM_wet","lo_VM_dw_percent","lo_CH_dry","lo_CH_wet","lo_CH_dw_percent")
+#colnames(los)<-c("rolllo","lo_score","lo_VM_dry","lo_VM_wet","lo_VM_dw_percent","lo_CH_dry","lo_CH_wet","lo_CH_dw_percent","lo_CT_dry","lo_CT_wet","lo_CT_dw_percent","lo_SD_dry","lo_SD_wet","lo_SD_dw_percent")
 #his 
 his<-subset(allplantww3, genotype %in% hilo$rollhi)
-colnames(his)<-c("rollhi","hi_score","hi_VM_dry","hi_VM_wet","hi_VM_dw_percent","hi_CH_dry","hi_CH_wet","hi_CH_dw_percent","hi_CT_dry","hi_CT_wet","hi_CT_dw_percent","hi_SD_dry","hi_SD_wet","hi_SD_dw_percent")
+colnames(his)<-c("rollhi","hi_score","hi_VM_dry","hi_VM_wet","hi_VM_dw_percent","hi_CH_dry","hi_CH_wet","hi_CH_dw_percent")
+#colnames(his)<-c("rollhi","hi_score","hi_VM_dry","hi_VM_wet","hi_VM_dw_percent","hi_CH_dry","hi_CH_wet","hi_CH_dw_percent","hi_CT_dry","hi_CT_wet","hi_CT_dw_percent","hi_SD_dry","hi_SD_wet","hi_SD_dw_percent")
 #merge
 hilo1<-merge(hilo, los, by="rolllo")
 hilo2<-merge(hilo1, his, by="rollhi")
@@ -568,17 +696,68 @@ hilo3<-ddply(hilo2, c("rollhi"), summarise,
              hiloCTr=mean(hilo_CT_dif),
              hiloSDr=mean(hilo_SD_dif),
              hilodist=mean(distance))
+hilo3<-ddply(hilo2, c("rollhi"), summarise, 
+             hiloVMd=mean(hilo_VM_dry), 
+             hiloCHd=mean(hilo_CH_dry),
+             #hiloCTd=mean(hilo_CT_dry),
+             #hiloSDd=mean(hilo_SD_dry),
+             hiloVMw=mean(hilo_VM_wet), 
+             hiloCHw=mean(hilo_CH_wet),
+             #hiloCTw=mean(hilo_CT_wet),
+             #hiloSDw=mean(hilo_SD_wet),
+             hiloVMr=mean(hilo_VM_dif), 
+             hiloCHr=mean(hilo_CH_dif),
+             #hiloCTr=mean(hilo_CT_dif),
+             #hiloSDr=mean(hilo_SD_dif),
+             hilodist=mean(distance))
 
-t.test(hilo2$lo_SD_dry, hilo2$hi_SD_dry)
+hilo4<-hilo3[complete.cases(hilo3),]
+hilo21<-hilo2[complete.cases(hilo2),]
+hilo22<-ddply(hilo21, c("rollhi"), summarise, 
+              lo_VM=mean(lo_VM_dry),
+              hi_VM=mean(hi_VM_dry),
+              lo_CH=mean(lo_CH_dry),
+              hi_CH=mean(hi_CH_dry))
 
-boxplot(hilo2$lo_SD_dry, hilo2$hi_SD_dry, names=c("lo","hi"), main="SD dry")
 
-ggplot(hilo3, aes(x=rollhi, y=hiloVMd))+
+t.test(hilo2$lo_VM_dry, hilo2$hi_VM_dry)
+boxplot(hilo2$lo_VM_dry, hilo2$hi_VM_dry, names=c("low LRS","high LRS"), main="WD vegetative mass (g) p-value=0.0589")
+
+t.test(hilo2$lo_CH_dry, hilo2$hi_CH_dry)
+boxplot(hilo2$lo_CH_dry, hilo2$hi_CH_dry, names=c("low LRS","high LRS"), main="WD culm height (mm) p-value=0.0641")
+
+t.test(hilo4$hiloVMd)
+t.test(hilo4$hiloCHd)
+
+
+png(file="./results/boxplot_hiloVM.png")
+boxplot(hilo2$lo_VM_dry, hilo2$hi_VM_dry, names=c("low LRS","high LRS"), main="WD vegetative mass (g) p-value=0.0589")
+dev.off()
+
+png(file="./results/boxplot_hiloCH.png")
+boxplot(hilo2$lo_CH_dry, hilo2$hi_CH_dry, names=c("low LRS","high LRS"), main="WD culm height (mm) p-value=0.0641")
+dev.off()  
+
+
+
+
+f4d<-ggplot(hilo4, aes(x=rollhi, y=hiloVMd))+
   geom_bar(stat="identity", fill="grey")+
   geom_hline(yintercept=0)+
   #geom_text(aes(label=sprintf("%0.2f", round(hilodist, digits = 2)),vjust=ifelse(hiloVM>=0,-0.3,1.3)))+
   xlab(expression("accessions with leaf roll score">=2))+ylab("")+
-  #scale_y_continuous("canopy temperature difference (C)", position="right")+
+  scale_y_continuous("vegetative mass difference (g)", position="right")+
+  theme_minimal()+theme(panel.grid.minor.y=element_blank(),
+                        panel.grid.minor.x=element_blank(),
+                        panel.grid.major.x=element_blank(),
+                        axis.text.x=element_text(angle=45,vjust = 1, hjust=1))
+
+f4c<-ggplot(hilo4, aes(x=rollhi, y=hiloCHd))+
+  geom_bar(stat="identity", fill="grey")+
+  geom_hline(yintercept=0)+
+  #geom_text(aes(label=sprintf("%0.2f", round(hilodist, digits = 2)),vjust=ifelse(hiloVM>=0,-0.3,1.3)))+
+  xlab(expression("accessions with leaf roll score">=2))+ylab("")+
+  scale_y_continuous("culm height difference (mm)", position="right")+
   theme_minimal()+theme(panel.grid.minor.y=element_blank(),
                         panel.grid.minor.x=element_blank(),
                         panel.grid.major.x=element_blank(),
@@ -612,25 +791,18 @@ groupingLRS_CH<-cld(leastsquareLRS_CH,
                     adjust="tukey")
 
 
-ggplot(allplantww1, aes(score, CH_dry, group=score))+
+f4a<-ggplot(allplantww1, aes(factor(score), CH_dry))+
   geom_jitter(width=0.075, color=allplantww1$sibling)+
   #geom_abline(intercept=coefs[1], slope=coefs[2], size=0.5)+
   ylim(0,NA)+
-  ylab("DS culm height (mm)")+
+  ylab("WD culm height (mm)")+
   xlab("")+
-  #geom_text(aes(x=2, y=810, label="y = 47.76x + 337.30"))+
-  #geom_text(aes(x=2, y=790, label="p-value = 0.002"))+
-  #geom_text(aes(x=2, y=770, label="r-squared = 0.04"))+
-  annotate("text",x=2,y=830,label="y = 47.76x + 337.30")+
-  annotate("text",x=2,y=790,label="p-value = 0.002")+
-  annotate("text",x=2,y=750,label="r-squared = 0.04")+
-  theme(panel.background = element_rect(fill = "white", colour = "black"),axis.ticks.x=element_blank(),axis.text.x=element_blank())
-#theme_classic()+theme(axis.line.x=element_blank(),axis.ticks.x=element_blank(),axis.text.x=element_blank())
+  theme(panel.background = element_rect(fill = "white", colour = "black"))+
+  theme(axis.ticks.length=unit(-0.25, "cm"), 
+        axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
+        axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 
-
-
-
-
+#LRS vs WD vegetative mass 
 modelLRS_VM = lm(VM_dry ~ factor(score),
            data=allplantww1)
 
@@ -643,11 +815,11 @@ groupingLRS_VM<-cld(leastsquareLRS_VM,
               Letters = letters,
               adjust="tukey")
 
-ggplot(data=allplantww1, aes(factor(score), VM_dry))+
+f4b<-ggplot(data=allplantww1, aes(factor(score), VM_dry))+
   #geom_boxplot()+
   geom_jitter(width=0.125, color=allplantww1$sibling)+
   #stat_summary(fun.y=mean, color="blue", geom="point")+
-  ylab("DS vegetative mass (g)")+xlab("leaf rolling score")+
+  ylab("WD vegetative mass (g)")+xlab("leaf rolling score")+
   #geom_text(data=check, aes(label=round(VM_dry, 2), y=VM_dry))+
   #geom_text(data=number, aes(label=VM_dry, y=0))+
   geom_text(data=groupingLRS_VM, aes(label=.group, x=factor(groupingLRS_VM$score), y=6))+
@@ -657,12 +829,13 @@ ggplot(data=allplantww1, aes(factor(score), VM_dry))+
         axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 
 
+png(file="./results/f4rev.png", width=900, height=500)
+plot_grid(f4a, f4c, f4b, f4d, ncol=2, labels=c("A","B","C","D"))
+dev.off()
+
+plot_grid(f4a, f4c, f4b, f4d, ncol=2, labels=c("A","B","C","D"))
 
 
-
-
-#relate productivity to score 
-#compare siblings 
 
 
 
@@ -681,8 +854,8 @@ LRS_CT$sibling[is.na(LRS_CT$sibling)]<-"grey"
 
 LRS_CT$score[LRS_CT$score==3]<-2.5
 
-ggplot(LRS_CT, aes(x=factor(score), y=average))+
-  geom_jitter(width=0.125, color=LRS_CT$sibling)
+ggplot(LRS_CT1, aes(x=factor(score), y=average))+
+  geom_jitter(width=0.125, color=LRS_CT1$sibling)
   
 
 #do canopy temperature wide by treatment and calculate a difference and then merge with the sibling hi lo comparison 
@@ -716,6 +889,23 @@ LRS_SD1$sibling[is.na(LRS_SD1$sibling)]<-"grey"
 ggplot(LRS_SD1, aes(x=factor(score), y=average))+
   geom_jitter(width=0.125, color=LRS_SD1$sibling)
 
+modelLRS_SD = lm(average ~ factor(score),
+                 data=LRS_SD1)
+
+leastsquareLRS_SD = lsmeans(modelLRS_SD,
+                            pairwise ~ factor(score),
+                            adjust = "tukey")
+
+groupingLRS_SD<-cld(leastsquareLRS_SD,
+                    alpha   = 0.05,
+                    Letters = letters,
+                    adjust="tukey")
+
+
+
+
+
+
 #stomatal density wide by treatment and calculate difference to merge with other traits for sibling comparison 
 SDg1<-subset(SDg, collection=="P1")
 SDg1<-subset(SDg1, trait=="SDraw")
@@ -726,6 +916,21 @@ SDw$SD_dw_percent<-SDw$SD_dry/SDw$SD_wet
 
 
 
+#try stomatal density with subset 15
+SDsub<-subset(SDfull, subplot_id %in% subset15)
+SDsub1<-SDsub
+SDsub1$trt_abb[SDsub1$treatment=="wet"]<-"WW"
+SDsub1$trt_abb[SDsub1$treatment=="dry"]<-"WD"
+SDsub2<-SDsub1[,c(3,7,4)]
+
+comparewSD<-merge(comparew, SDsub2, by=c("genotype","trt_abb"))
+
+
+ggplot(comparewSD, aes(x=SDraw, y=roll, color=trt_abb))+
+  geom_point()+
+  geom_smooth(method="lm")+
+  scale_color_manual(values=c("grey", "black"))
+#:( nothing here
 
 ###################
 ###SUPPLEMENTALS###
@@ -734,30 +939,41 @@ SDw$SD_dw_percent<-SDw$SD_dry/SDw$SD_wet
 #S1 weather, soil moisture 
 
 #S2 score correlation with diurnal rolling 
+#remove some select points? outliers in CLP and PAI 
 
 s2a<-ggplot(subset(dPAI_roll, trt_abb=="WD"), aes(x=roll, y=LRS))+
-  geom_point()+geom_smooth(method="lm", se=FALSE, color="black")+
+  geom_point()+geom_smooth(method="lm", se=FALSE, color="black", size=0.5)+
+  annotate("text",x=0.45,y=1,label=expression(paste(r^{2},"=0.51 **")), size=5)+
+  xlab("WD leaf roll angle (midday/dawn)")+ylab("leaf rolling score")+
   theme(axis.ticks.length=unit(-0.25, "cm"), 
         axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
         axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 s2b<-ggplot(subset(dPAI_roll, trt_abb=="WD"), aes(x=inclination, y=LRS))+
-  geom_point()+geom_smooth(method="lm", se=FALSE, color="black")+
+  geom_point()+
+  xlab("WD leaf inclination angle (midday/dawn)")+ylab("leaf rolling score")+
   theme(axis.ticks.length=unit(-0.25, "cm"), 
         axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
         axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 s2c<-ggplot(subset(dPAI_roll, trt_abb=="WD"), aes(x=CLP, y=LRS))+
-  geom_point()+geom_smooth(method="lm", se=FALSE, color="black")+
+  geom_point()+geom_smooth(method="lm", se=FALSE, color="black", size=0.5)+
+  annotate("text",x=1.3,y=1,label=expression(paste(r^{2},"=0.47 **")), size=5)+
+  xlab("WD CLP (midday/dawn)")+ylab("leaf rolling score")+
   theme(axis.ticks.length=unit(-0.25, "cm"), 
         axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
         axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 s2d<-ggplot(subset(dPAI_roll, trt_abb=="WD"), aes(x=PAI, y=LRS))+
-  geom_point()+geom_smooth(method="lm", se=FALSE, color="black")+
+  geom_point()+geom_smooth(method="lm", se=FALSE, color="black",size=0.5)+
+  annotate("text",x=0.85,y=1,label=expression(paste(r^{2},"=0.34 *")), size=5)+
+  xlab("WD PAI (midday/dawn)")+ylab("leaf rolling score")+
   theme(axis.ticks.length=unit(-0.25, "cm"), 
         axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
         axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")) )
 
-
 plot_grid(s2a, s2b, s2c, s2d, labels=c("A","B","C","D"))
+
+png(file="./results/s2rev.png", width=900, height=500)
+plot_grid(s2a, s2b, s2c, s2d, labels=c("A","B","C","D"))
+dev.off()
 
 
 #S3 lack of correlation between wet and dry diurnal rolling? 
